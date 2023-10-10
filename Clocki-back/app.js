@@ -20,8 +20,8 @@ app.post('/registro', async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // Obtiene la fecha actual en formato ISO
-        const fechaRegistro = new Date().toISOString();
+        // Obtiene la fecha actual en formato ISO y luego la formatea como "dd/mm/yyyy"
+        const fechaRegistro = new Date().toLocaleDateString('es-ES');
 
         // Genera un token de recuperación inicializado como null
         const tokenRecuperacion = null;
@@ -47,9 +47,6 @@ app.post('/registro', async (req, res) => {
 });
 
 
-
-
-//EndPoint para logear
 // Endpoint para iniciar sesión
 app.post('/login', async (req, res) => {
     try {
