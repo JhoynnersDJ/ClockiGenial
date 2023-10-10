@@ -1,43 +1,35 @@
 const express = require('express');
-const { initializeApp } = require('firebase/app');
-const { getAuth, signInWithEmailAndPassword } = require('firebase/auth');
 const cors = require('cors');
+const bodyParser = require('body-parser'); // Importa el middleware body-parser
 
 const app = express();
 const port = 8000;
 
-// Configuración de Firebase (reemplaza con tus credenciales)
-const firebaseConfig = {
-    apiKey: "AIzaSyBNXC-5ht7SpHD5NsAHX3yem4oZeU0jnis",
-    authDomain: "dev-fusion-401517.firebaseapp.com",
-    projectId: "dev-fusion-401517",
-    storageBucket: "dev-fusion-401517.appspot.com",
-    messagingSenderId: "868868796303",
-    appId: "1:868868796303:web:45bfe97f58e7fabeaf25fa",
-    measurementId: "G-YVM21V9KPW"
-};
-
-// Inicializar Firebase
-const firebaseApp = initializeApp(firebaseConfig);
-const auth = getAuth(firebaseApp);
-
 // Middleware CORS para permitir solicitudes desde otros servidores
 app.use(cors());
 
-// Ruta para el inicio de sesión
-app.post('/login', async (req, res) => {
-    const { email, password } = req.body;
+// Middleware para analizar el cuerpo de la solicitud como JSON
+app.use(bodyParser.json());
 
+// Importa la instancia de Firebase y Firestore
+const { db } = require('./database/firebase');
+
+// Endpoint para guardar correo electrónico y contraseña en Firestore
+app.post('/registro', async (req, res) => {
     try {
-        // Autenticación de Firebase
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
+        const { email, password } = req.body;
 
-        // Envía un mensaje de bienvenida
-        res.status(200).json({ message: `¡Bienvenido, ${user.email}!` });
+        // Guarda el correo electrónico y la contraseña en Firestore
+        const userSave = db.collection('usuarios');
+        await userSave.add({
+            email,
+            password
+        });
+
+        res.status(200).json({ message: 'Usuario guardado con éxito en Firestore' });
     } catch (error) {
-        // Manejar errores de autenticación
-        res.status(401).json({ error: 'Credenciales incorrectas' });
+        console.error('Error al guardar el usuario en Firestore:', error);
+        res.status(500).json({ error: 'Ocurrió un error al guardar el usuario' });
     }
 });
 
