@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const { initializeApp } = require('firebase/app');
-const { getFirestore, collection, getDocs, query, where, addDoc} = require('firebase/firestore');
+const { getFirestore, collection, getDocs, query, where, addDoc, doc,getDoc} = require('firebase/firestore');
 const { sign } = require('jsonwebtoken');
 
 const { db, firebase } = require('./database/firebase');
@@ -22,10 +22,8 @@ app.post('/registro', async (req, res) => {
 
         // Obtiene la fecha actual en formato ISO y luego la formatea como "dd/mm/yyyy"
         const fechaRegistro = new Date().toLocaleDateString('es-ES');
-
-        // Genera un token de recuperación inicializado como null
         const tokenRecuperacion = null;
-
+        const idRol = "ru11bY0aElvEO95acK6c"
         // Crea un nuevo usuario con los datos proporcionados y los valores adicionales
         const usuarioNuevo = {
             email,
@@ -34,7 +32,8 @@ app.post('/registro', async (req, res) => {
             apellido,
             verificado: true,
             fecha_registro: fechaRegistro,
-            token_recuperacion: tokenRecuperacion
+            token_recuperacion: tokenRecuperacion,
+            rol: doc(db, 'rol', idRol) // Referencia al documento del rol
         };
 
         // Guarda el nuevo usuario en Firestore
@@ -47,7 +46,6 @@ app.post('/registro', async (req, res) => {
         res.status(500).json({ error: 'Ocurrió un error al guardar el usuario' });
     }
 });
-
 
 // Endpoint para iniciar sesión
 app.post('/login', async (req, res) => {
@@ -90,8 +88,6 @@ app.post('/login', async (req, res) => {
         res.status(500).json({ error: 'Ocurrió un error al iniciar sesión' });
     }
 });
-
-
 
 app.listen(port, () => {
     console.log(`La aplicación está corriendo en http://localhost:${port}`);
