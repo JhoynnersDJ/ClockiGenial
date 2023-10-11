@@ -18,7 +18,7 @@ app.use(bodyParser.json());
 // Endpoint para guardar correo electrónico y contraseña en Firestore
 app.post('/registro', async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, nombre, apellido } = req.body;
 
         // Obtiene la fecha actual en formato ISO y luego la formatea como "dd/mm/yyyy"
         const fechaRegistro = new Date().toLocaleDateString('es-ES');
@@ -30,6 +30,8 @@ app.post('/registro', async (req, res) => {
         const usuarioNuevo = {
             email,
             password,
+            nombre,
+            apellido,
             verificado: true,
             fecha_registro: fechaRegistro,
             token_recuperacion: tokenRecuperacion
