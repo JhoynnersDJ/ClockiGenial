@@ -2,7 +2,6 @@ import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import React from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import PaletaColor from "../../tema/PaletaColor";
-import Reloj from "../../icons/Reloj.svg";
 
 const Bienvenida = ({ navigation }) => {
   //Estilos para Titulo y Subtitulo
@@ -20,10 +19,10 @@ const Bienvenida = ({ navigation }) => {
       left: 5,
     },
     content: {
-      position: "absolute",
-      top: 430,
       width: "100%",
       paddingHorizontal: 22,
+      flex: 1,
+      justifyContent: "flex-end",
     },
     parrafo: {
       fontSize: 20,
@@ -54,7 +53,7 @@ const Bienvenida = ({ navigation }) => {
 
   return (
     <LinearGradient
-      style={{ flex: 1 }}
+      style={{ flex: 1, flexDirection: "column", justifyContent: "flex-end", alignContent: "flex-end", width: "100%", height: "100%" }}
       colors={[
         PaletaColor.primary,
         PaletaColor.tertiary,
@@ -63,20 +62,31 @@ const Bienvenida = ({ navigation }) => {
       start={{ x: 0, y: 0 }}
       end={{ x: 1.5, y: 1.5 }}
     >
-        <View style={{flex: 1, gap: 20, top: 100}}>
+      
+      {/* Container Imagenes */}
+      <View style={{flex: 1, gap: 20, top: 100}}>
+
+          {/* Encabezado Imagenes */}
       <Image
         source={require("../../icons/fast-time.png")}
         style={{position: "absolute", width: 300, height: 300, left: -30 }}
       />
       <Image
         source={require("../../icons/presentacion.png")}
-        style={{position:"absolute", width: 100, height: 100, left: 240 }}
+        style={{position:"absolute", width: 100, height: 100, right: 30 }}
       />
             <Image
         source={require("../../icons/presentacion.png")}
-        style={{position:"absolute", width: 100, height: 100, left: 190, top: 230 }}
+        style={{position:"absolute", width: 70, height: 70, left: -25, top: 255 }}
       />
+                  <Image
+        source={require("../../icons/presentacion.png")}
+        style={{position:"absolute", width: 120, height: 120, left:220 , top: 210 }}
+      />
+
         </View >
+
+        {/* Contenido Abajo */}
       <View style={styles.content}>
         <Text style={styles.titulo}>OmniTime</Text>
         <Text style={styles.subtitulo}>Tu reloj personal</Text>
