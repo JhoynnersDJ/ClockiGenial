@@ -1,9 +1,22 @@
 import React from "react";
-import { Text, View, Button, TextInput, Alert, TouchableOpacity, StyleSheet, Image,  KeyboardAvoidingView, // Agrega este import
-Platform, } from "react-native";
+import {
+  Text,
+  View,
+  Button,
+  TextInput,
+  Alert,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  KeyboardAvoidingView, // Agrega este import
+  Platform,
+  StatusBar,
+} from "react-native";
 import axios from "axios";
 import Icon from "react-native-vector-icons/Fontisto";
 import PaletaColor from "../../tema/PaletaColor";
+import Constants from "expo-constants";
+
 
 const Registro = ({ navigation }) => {
   const [nombre, setNombre] = React.useState("");
@@ -17,7 +30,8 @@ const Registro = ({ navigation }) => {
 
   //Mostrar contraseña
   const [mostrarPassword, setMostrarPassword] = React.useState(true);
-  const [mostrarConfirmarPassword, setMostrarConfirmarPassword] = React.useState(true);
+  const [mostrarConfirmarPassword, setMostrarConfirmarPassword] =
+    React.useState(true);
 
   const registrarUsuario = async () => {
     if (!nombre.trim()) {
@@ -63,217 +77,304 @@ const Registro = ({ navigation }) => {
 
   //Estilos
   const styles = StyleSheet.create({
-    header:{
+    header: {
       top: 0,
       backgroundColor: PaletaColor.primary,
-      height: 100,
+      height: 60,
       alignItems: "center",
       justifyContent: "space-between",
       flexDirection: "row",
       paddingHorizontal: 20,
-      paddingTop: 40,
-    },headertitle:{
+    },
+    headertitle: {
       fontSize: 24,
       fontWeight: "bold",
       color: PaletaColor.white,
       textAlign: "center",
-    },headerlogin:{
+    },
+    headerlogin: {
       fontSize: 16,
       fontWeight: "bold",
       color: PaletaColor.white,
       textAlign: "center",
-    }, content:{
+    },
+    content: {
       width: "100%",
       paddingHorizontal: 22,
-      alignItems: "center",
-      justifyContent: "center",
       flex: 1,
+      flexDirection: "column",
+      paddingVertical: 5,
+      justifyContent: "flex-start",
+      alignItems: "center",
+      gap: 15,
     },
-      input:{
+    input: {
       width: "100%",
       height: 50,
       borderRadius: 10,
       borderColor: PaletaColor.darkgray,
       borderWidth: 1,
       paddingHorizontal: 20,
-      marginVertical: 10,
       justifyContent: "center",
       alignItems: "center",
       backgroundColor: PaletaColor.white,
       color: PaletaColor.darkgray,
     },
-    container:{
+    container: {
       flex: 1,
       backgroundColor: PaletaColor.white,
+      flexDirection: "column",
+      //Iconos blancos de la statusbar
     },
-  }
-    );
-  
+    containerLogo: {
+      alignItems: "center",
+      width: "100%",
+      paddingHorizontal: 22,
+      paddingTop: 20,
+    },
+  });
+
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"} // Comportamiento dependiendo del sistema operativo
-      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 30} // Offset adicional para ajustar la vista
-    >
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor={PaletaColor.primary} />
       {/* Encabezado */}
       <View style={styles.header}>
-        <Icon name="close-a" size={16} color={PaletaColor.white} />
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Icon name="close-a" size={16} color={PaletaColor.white} />
+        </TouchableOpacity>
         <Text style={styles.headertitle}>Registro de Usuario</Text>
-        <TouchableOpacity
-          onPress={() => navigation.navigate("Login")}
-        >
+        <TouchableOpacity onPress={() => navigation.navigate("Login")}>
           <Text style={styles.headerlogin}>Login</Text>
         </TouchableOpacity>
       </View>
       {/* Fin Encabezado */}
-      {/* Inicio de Formulario de Registro */}
-      <View style={styles.content}>
-        {/* Logo Debo cambiar color a morado luego de que entienda como funciona el gradiente */}
-        <View style={{ width: "100%", alignContent:"center", height:160, backgroundColor: "trasparent", borderRadius: 30, marginBottom: 20, justifyContent: "center", alignItems: "center" }}>
-        {/* <Text style={{ color: PaletaColor.white, fontWeight: "bold", fontSize: 20, top:40 }}>Bienvenido a OmniTime</Text>
-        <Image source={require("../../icons/fast-time.png")} 
-        style={{ width: 200, height: 200, top:0, }}
-        /> */}
-        </View>
-        {/* Fin del Logo */}
-      <TextInput
-        style={styles.input}
-        onChangeText={(text) => setNombre(text)}
-        value={nombre}
-        placeholder="Nombre"
-      />
-      <TextInput
-        style={styles.input}
-        onChangeText={(text) => setApellido(text)}
-        value={apellido}
-        placeholder="Apellido"
-      />
-      <TextInput
-        style={styles.input}
-        onChangeText={(text) => setEmail(text)}
-        value={email}
-        placeholder="Email"
-      />
-      <View style={{ width: "100%", alignContent:"center", justifyContent: "center" }}>
-      <TextInput
-        style={styles.input}
-        onChangeText={(text) => setPassword(text)}
-        value={password}
-        placeholder="Contraseña"
-        secureTextEntry={mostrarPassword}
-      />
-
-      <TouchableOpacity
-        style={{
-          position: "absolute",
-          right: 10,
-        }}
-        onPress={() => setMostrarPassword(!mostrarPassword)}
-      >
-        <Text
+      {/* Logo */}
+      <View style={styles.containerLogo}>
+        <View
           style={{
-            color: PaletaColor.primary,
-            fontWeight: "bold",
+            width: "100%",
+            alignContent: "center",
+            height: 160,
+            backgroundColor: PaletaColor.primary,
+            borderRadius: 30,
+            marginBottom: 20,
+            justifyContent: "center",
+            alignItems: "center",
           }}
-        > Mostrar </Text>
-      </TouchableOpacity>
-      </View>
-      <View style={{ width: "100%", alignContent:"center", justifyContent: "center" }}>
-      <TextInput
-        style={styles.input}
-        onChangeText={(text) => setConfirmarPassword(text)}
-        value={confirmarPassword}
-        placeholder="Confirmar Contraseña"
-        secureTextEntry={mostrarConfirmarPassword}
-      />
-
-      <TouchableOpacity
-        style={{
-          position: "absolute",
-          right: 10,
-        }}
-        onPress={() => setMostrarConfirmarPassword(!mostrarConfirmarPassword)}
-      >
-        <Text
-          style={{
-            color: PaletaColor.primary,
-            fontWeight: "bold",
-          }}
-        > Mostrar </Text>
-      </TouchableOpacity>
-      </View>
-      {/* Terminos y condiciones con checkbox y texto */}
-      <View style={{ width: "100%", alignContent:"center", justifyContent: "center" }}>
-      <View style={{ flexDirection: "row", alignItems: "center" }}>
-        <TouchableOpacity
-          style={{
-            width: 20,
-            height: 20,
-            borderRadius: 5,
-            borderWidth: 2,
-            borderColor: PaletaColor.primary,
-            marginRight: 10,
-            backgroundColor: terminos ? PaletaColor.primary : PaletaColor.white,
-          }}
-          onPress={() => setTerminos(!terminos)}
         >
-          {terminos && (
-            <Icon
-              name="check"
-              size={15}
-              color={PaletaColor.white}
-              style={{ textAlign: "center" }}
-            />
-          )}
-        </TouchableOpacity>
-        <Text style={{ color: PaletaColor.darkgray }}>
-          Acepto los terminos y condiciones de uso
-        </Text>
-      </View>
-      </View>
-
-      {/* Fin de Formulario de Registro */}
-      {/* Boton de Registro */}
-      <View style={{ width: "100%", alignContent:"center", justifyContent: "center" }}>
-      <TouchableOpacity
-        style={{
-          width: "100%",
-          height: 50,
-          borderRadius: 10,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: PaletaColor.primary,
-          marginTop: 20,
-        }}
-        onPress={registrarUsuario}
-      >
-        <Text
-          style={{
-            color: PaletaColor.white,
-            fontWeight: "bold",
-          }}
-        > Registrar </Text>
-      </TouchableOpacity>
-      </View>
-      {/* Fin Boton de Registro */}
-      {/* Texto de login */}
-      <View style={{ width: "100%", alignContent:"center", justifyContent: "center" }}>
-      <View style={{ flexDirection: "row", marginTop: 20,justifyContent:"center" }}>
-        <Text style={{ color: PaletaColor.darkgray }}>
-          ¿Ya tienes una cuenta?
-        </Text>
-        <TouchableOpacity
-          onPress={() => navigation.navigate("Login")}
-        >
-          <Text style={{ color: PaletaColor.primary, marginLeft: 10 }}>
-            Inicia Sesión
+          <Text
+            style={{
+              color: PaletaColor.white,
+              fontWeight: "bold",
+              fontSize: 20,
+              top: 40,
+            }}
+          >
+            Bienvenido a OmniTime
           </Text>
-        </TouchableOpacity>
+          <Image
+            source={require("../../icons/fast-time.png")}
+            style={{ width: 200, height: 200, top: 0 }}
+          />
+        </View>
       </View>
+      {/* Fin del Logo */}
+      <KeyboardAvoidingView
+        behavior="padding"
+        style={styles.content}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 90}
+      >
+        <TextInput
+          style={styles.input}
+          onChangeText={(text) => setNombre(text)}
+          value={nombre}
+          placeholder="Nombre"
+        />
+        <TextInput
+          style={styles.input}
+          onChangeText={(text) => setApellido(text)}
+          value={apellido}
+          placeholder="Apellido"
+        />
+        <TextInput
+          style={styles.input}
+          onChangeText={(text) => setEmail(text)}
+          value={email}
+          placeholder="Email"
+        />
+        <View
+          style={{
+            width: "100%",
+            alignContent: "center",
+            justifyContent: "center",
+          }}
+        >
+          <TextInput
+            style={styles.input}
+            onChangeText={(text) => setPassword(text)}
+            value={password}
+            placeholder="Contraseña"
+            secureTextEntry={mostrarPassword}
+          />
+
+          <TouchableOpacity
+            style={{
+              position: "absolute",
+              right: 10,
+            }}
+            onPress={() => setMostrarPassword(!mostrarPassword)}
+          >
+            <Text
+              style={{
+                color: PaletaColor.primary,
+                fontWeight: "bold",
+              }}
+            >
+              {" "}
+              Mostrar{" "}
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <View
+          style={{
+            width: "100%",
+            alignContent: "center",
+            justifyContent: "center",
+          }}
+        >
+          <TextInput
+            style={styles.input}
+            onChangeText={(text) => setConfirmarPassword(text)}
+            value={confirmarPassword}
+            placeholder="Confirmar Contraseña"
+            secureTextEntry={mostrarConfirmarPassword}
+          />
+
+          <TouchableOpacity
+            style={{
+              position: "absolute",
+              right: 10,
+            }}
+            onPress={() =>
+              setMostrarConfirmarPassword(!mostrarConfirmarPassword)
+            }
+          >
+            <Text
+              style={{
+                color: PaletaColor.primary,
+                fontWeight: "bold",
+              }}
+            >
+              {" "}
+              Mostrar{" "}
+            </Text>
+          </TouchableOpacity>
+        </View>
+        {/* Terminos y condiciones con checkbox y texto */}
+        <View
+          style={{
+            width: "100%",
+            alignContent: "center",
+            justifyContent: "center",
+          }}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <TouchableOpacity
+              style={{
+                width: 20,
+                height: 20,
+                borderRadius: 5,
+                borderWidth: 2,
+                borderColor: PaletaColor.primary,
+                marginRight: 10,
+                backgroundColor: terminos
+                  ? PaletaColor.primary
+                  : PaletaColor.white,
+              }}
+              onPress={() => setTerminos(!terminos)}
+            >
+              {terminos && (
+                <Icon
+                  name="check"
+                  size={10}
+                  color={PaletaColor.white}
+                  style={{ textAlign: "center", marginTop: 3 }}
+                />
+              )}
+            </TouchableOpacity>
+            <Text style={{ color: PaletaColor.darkgray }}>
+              Acepto los terminos y condiciones de uso
+            </Text>
+          </View>
+        </View>
+
+        {/* Fin de Formulario de Registro */}
+        {/* Boton de Registro */}
+        <View
+          style={{
+            width: "100%",
+            alignContent: "center",
+            justifyContent: "center",
+          }}
+        >
+          <TouchableOpacity
+            style={{
+              width: "100%",
+              height: 50,
+              borderRadius: 10,
+              justifyContent: "center",
+              alignItems: "center",
+              backgroundColor: PaletaColor.primary,
+              marginTop: 20,
+            }}
+            onPress={registrarUsuario}
+          >
+            <Text
+              style={{
+                color: PaletaColor.white,
+                fontWeight: "bold",
+              }}
+            >
+              {" "}
+              Registrar{" "}
+            </Text>
+          </TouchableOpacity>
+        </View>
+        {/* Fin Boton de Registro */}
+        {/* Texto de login */}
+        <View
+          style={{
+            width: "100%",
+            alignContent: "center",
+            justifyContent: "center",
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text style={{ color: PaletaColor.darkgray }}>
+              ¿Ya tienes una cuenta?
+            </Text>
+            <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+              <Text
+                style={{
+                  color: PaletaColor.primary,
+                  marginLeft: 10,
+                  fontWeight: "bold",
+                }}
+              >
+                Inicia Sesión
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        {/* Fin Texto de login */}
+      </KeyboardAvoidingView>
     </View>
-    {/* Fin Texto de login */}
-    </View>
-    </KeyboardAvoidingView>
   );
 };
 
