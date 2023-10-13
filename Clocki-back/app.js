@@ -2,16 +2,18 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const { initializeApp } = require('firebase/app');
-const { getFirestore, collection, getDocs, query, where, addDoc, doc,getDoc} = require('firebase/firestore');
+const { getFirestore, collection, getDocs, query, where, addDoc, doc,getDoc, updateDoc} = require('firebase/firestore');
 const { sign } = require('jsonwebtoken');
 const { db, firebase } = require('./database/firebase');
 const nodemailer = require('nodemailer');
 const emailConfig = require('./emailConfig'); // Importa la configuración
+const crypto = require('crypto');
+
 
 const secretToken = "Hl*2l3c#Tl4&Rb2Dp!5s";
 
 const app = express();
-const port = 8000;
+const port = 7000;
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -113,8 +115,6 @@ const htmlContent = `
         console.error('Error al guardar el usuario en Firestore:', error);
         res.status(500).json({ error: 'Ocurrió un error al guardar el usuario' });
         }
-
-        
     });
 
 // Endpoint para iniciar sesión
@@ -158,6 +158,108 @@ app.post('/login', async (req, res) => {
         res.status(500).json({ error: 'Ocurrió un error al iniciar sesión' });
     }
 });
+
+
+// Endpoint para solicitar el restablecimiento de contraseña
+app.post('/olvide-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Genera un token seguro
+    const token = crypto.randomBytes(20).toString('hex');
+
+    // Guarda el token en el campo 'token_recuperacion' del usuario en la base de datos
+    const usuariosRef = collection(db, 'usuarios');
+    const q = query(usuariosRef, where('email', '==', email));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      const userDoc = querySnapshot.docs[0];
+      const userId = userDoc.id;
+
+      // Actualiza el documento del usuario con el nuevo token de recuperación
+      await updateDoc(doc(usuariosRef, userId), {
+        token_recuperacion: token,
+      });
+
+      // Construye el enlace para el restablecimiento de contraseña
+      const resetLink = `http://192.168.1.16:1111/auth/olvide-validado/${token}`;
+
+      // Crea un transporte de correo
+      const transporter = nodemailer.createTransport({
+        "service": "gmail",
+        "auth": {
+          "type": "OAuth2",
+          "user": "omnitetgroup01@gmail.com",
+          "clientId": "753006295934-a5s4k797r91oqeo43j7srr548v715a78.apps.googleusercontent.com",
+          "clientSecret": "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",
+          "refreshToken": "1//04SN02pSPtZPUCgYIARAAGAQSNwF-L9IratxmpXieduedcXWRCIBDJLv9GLM1dgsWRzndFAwiujWnMqRasz20blw9hrput7ZB0LY"
+        },
+      });
+
+      // Configura el correo electrónico
+      const mailOptions = {
+        from: 'omnitetgroup01@gmail.com',
+        to: email,
+        subject: 'Restablecer contraseña',
+        html: `<p>Haz clic en el siguiente enlace para restablecer tu contraseña: <a href="${resetLink}">${resetLink}</a></p>`,
+      };
+
+      // Envía el correo electrónico
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error('Error al enviar el correo:', error);
+          res.status(500).json({ error: 'Error al enviar el correo' });
+        } else {
+          console.log('Correo enviado:', info.response);
+          res.status(200).json({ message: 'Correo enviado con éxito' });
+        }
+      });
+    } else {
+      res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+  } catch (error) {
+    console.error('Error al solicitar el restablecimiento de contraseña:', error);
+    res.status(500).json({ error: 'Ocurrió un error al solicitar el restablecimiento de contraseña' });
+  }
+});
+
+// Endpoint para restablecer la contraseña
+app.get('/reset-password/:token', async (req, res) => {
+  try {
+    const token = req.params.token; // Obtén el token de la URL
+    const {nuevo_password} = req.body; // Obtén el nuevo password de la consulta GET
+
+    // Verifica si el token existe en la base de datos
+    const usuariosRef = collection(db, 'usuarios');
+    const q = query(usuariosRef, where('token_recuperacion', '==', token));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      const userDoc = querySnapshot.docs[0];
+      const userId = userDoc.id;
+
+      // Actualiza el campo 'password' con el nuevo password
+      await updateDoc(doc(usuariosRef, userId), {
+        password: nuevo_password,
+        token_recuperacion: null, // Limpia el campo 'token_recuperacion'
+      });
+
+      res.status(200).json({ message: 'Contraseña restablecida con éxito' });
+    } else {
+      res.status(404).json({ error: 'Token no válido' });
+    }
+  } catch (error) {
+    console.error('Error al restablecer la contraseña:', error);
+    res.status(500).json({ error: 'Ocurrió un error al restablecer la contraseña' });
+  }
+});
+
+
+
+
+
+
 
 app.listen(port, () => {
     console.log(`La aplicación está corriendo en http://localhost:${port}`);
