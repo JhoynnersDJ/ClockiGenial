@@ -117,47 +117,62 @@ const htmlContent = `
         }
     });
 
-// Endpoint para iniciar sesión
-app.post('/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-
-        if (!email || !password) {
-            console.log('Inicio de sesión fallido: Faltan credenciales');
-            res.status(401).json({ error: 'Credenciales incompletas' });
-            return;
-        }
-
-        // Validar si el email existe en la base de datos Firestore
-        const usersRef = collection(db, 'usuarios');
-        const q = query(usersRef, where('email', '==', email));
-        const querySnapshot = await getDocs(q);
-
-        if (querySnapshot.empty) {
-            console.log('Inicio de sesión fallido: Correo electrónico no encontrado');
-            res.status(401).json({ error: 'Credenciales incorrectas' });
-            return;
-        }
-
-        // El email existe en la base de datos, ahora verifica la contraseña
-        const user = querySnapshot.docs[0].data();
-
-        if (user.password !== password) {
-            console.log('Inicio de sesión fallido: Contraseña incorrecta');
-            res.status(401).json({ error: 'Credenciales incorrectas' });
-            return;
-        }
-
-        // Si las credenciales son correctas, genera un JWT y devuélvelo al cliente
-        const token = sign({ email }, secretToken, { expiresIn: '1h' });
-
-        console.log('Inicio de sesión exitoso');
-        res.status(200).json({ token });
-    } catch (error) {
-        console.error('Error al iniciar sesión:', error);
-        res.status(500).json({ error: 'Ocurrió un error al iniciar sesión' });
-    }
-});
+    app.post('/login', async (req, res) => {
+      try {
+          const { email, password } = req.body;
+  
+          if (!email || !password) {
+              console.log('Inicio de sesión fallido: Faltan credenciales');
+              res.status(401).json({ error: 'Credenciales incompletas' });
+              return;
+          }
+  
+          // Validar si el email existe en la base de datos Firestore
+          const usersRef = collection(db, 'usuarios');
+          const q = query(usersRef, where('email', '==', email));
+          const querySnapshot = await getDocs(q);
+  
+          if (querySnapshot.empty) {
+              console.log('Inicio de sesión fallido: Correo electrónico no encontrado');
+              res.status(401).json({ error: 'Credenciales incorrectas' });
+              return;
+          }
+  
+          // El email existe en la base de datos, ahora verifica la contraseña
+          const user = querySnapshot.docs[0].data();
+  
+          if (user.password !== password) {
+              console.log('Inicio de sesión fallido: Contraseña incorrecta');
+              res.status(401).json({ error: 'Credenciales incorrectas' });
+              return;
+          }
+  
+          // Obtener el ID de rol
+          const rolReference = user.rol; // La referencia al documento de rol
+  
+          const rolSnapshot = await getDoc(rolReference);
+          const id_rol = rolSnapshot.data().id_rol;
+  
+          // Si las credenciales son correctas, genera un JWT y devuélvelo al cliente
+          const token = sign({ email }, secretToken, { expiresIn: '1h' });
+  
+          console.log('Inicio de sesión exitoso');
+  
+          // Construye la respuesta
+          const response = {
+              token,
+              nombre: user.nombre,
+              apellido: user.apellido,
+              correo: user.email,
+              id_rol: id_rol
+          };
+  
+          res.status(200).json(response);
+      } catch (error) {
+          console.error('Error al iniciar sesión:', error);
+          res.status(500).json({ error: 'Ocurrió un error al iniciar sesión' });
+      }
+  });
 
 
 // Endpoint para solicitar el restablecimiento de contraseña
