@@ -1,12 +1,10 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const { initializeApp } = require('firebase/app');
-const { getFirestore, collection, getDocs, query, where, addDoc, doc,getDoc, updateDoc} = require('firebase/firestore');
+const { collection, getDocs, query, where, addDoc, doc,getDoc, updateDoc} = require('firebase/firestore');
 const { sign } = require('jsonwebtoken');
-const { db, firebase } = require('./database/firebase');
+const { db} = require('./database/firebase');
 const nodemailer = require('nodemailer');
-const emailConfig = require('./emailConfig'); // Importa la configuración
 const crypto = require('crypto');
 
 
@@ -18,6 +16,15 @@ const port = 7000;
 app.use(cors());
 app.use(bodyParser.json());
 
+
+function generarCodigoRecuperacion(longitud) {
+  let codigo = '';
+  for (let i = 0; i < longitud; i++) {
+    const digito = Math.floor(Math.random() * 10); // Genera un dígito aleatorio del 0 al 9
+    codigo += digito;
+  }
+  return codigo;
+}
 // Endpoint para guardar correo electrónico y contraseña en Firestore
 app.post('/registro', async (req, res) => {
     try {
@@ -180,10 +187,10 @@ app.post('/olvide-password', async (req, res) => {
   try {
     const { email } = req.body;
 
-    // Genera un token seguro
-    const token = crypto.randomBytes(20).toString('hex');
+    // Genera un código de recuperación de 6 números aleatorios
+    const codigoRecuperacion = generarCodigoRecuperacion(6);
 
-    // Guarda el token en el campo 'token_recuperacion' del usuario en la base de datos
+    // Guarda el código de recuperación en el campo 'token_recuperacion' del usuario en la base de datos
     const usuariosRef = collection(db, 'usuarios');
     const q = query(usuariosRef, where('email', '==', email));
     const querySnapshot = await getDocs(q);
@@ -192,13 +199,10 @@ app.post('/olvide-password', async (req, res) => {
       const userDoc = querySnapshot.docs[0];
       const userId = userDoc.id;
 
-      // Actualiza el documento del usuario con el nuevo token de recuperación
+      // Actualiza el documento del usuario con el nuevo código de recuperación
       await updateDoc(doc(usuariosRef, userId), {
-        token_recuperacion: token,
+        token_recuperacion: codigoRecuperacion,
       });
-
-      // Construye el enlace para el restablecimiento de contraseña
-      const resetLink = `http://192.168.1.16:1111/auth/olvide-validado/${token}`;
 
       // Crea un transporte de correo
       const transporter = nodemailer.createTransport({
@@ -217,7 +221,7 @@ app.post('/olvide-password', async (req, res) => {
         from: 'omnitetgroup01@gmail.com',
         to: email,
         subject: 'Restablecer contraseña',
-        html: `<p>Haz clic en el siguiente enlace para restablecer tu contraseña: <a href="${resetLink}">${resetLink}</a></p>`,
+        html: `<p>${codigoRecuperacion}</p>`,
       };
 
       // Envía el correo electrónico
@@ -227,7 +231,7 @@ app.post('/olvide-password', async (req, res) => {
           res.status(500).json({ error: 'Error al enviar el correo' });
         } else {
           console.log('Correo enviado:', info.response);
-          res.status(200).json({ message: 'Correo enviado con éxito' });
+          res.status(200).json({ message: 'Correo enviado' });
         }
       });
     } else {
