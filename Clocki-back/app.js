@@ -244,14 +244,19 @@ app.post('/olvide-password', async (req, res) => {
 });
 
 // Endpoint para restablecer la contraseña
-app.get('/reset-password/', async (req, res) => {
+app.post('/reset-password', async (req, res) => {
   try {
-    const {token_recuperacion} = req.body; // Obtén el token de la URL
-    const {nuevo_password} = req.body; // Obtén el nuevo password de la consulta GET
+    const token = req.body.token; // Obtén el token desde el formulario
+    const nuevo_password = req.body.nuevo_password; // Obtén el nuevo password desde el formulario
+
+    if (!token || !nuevo_password) {
+      res.status(400).json({ error: 'Token y nuevo_password son campos requeridos' });
+      return;
+    }
 
     // Verifica si el token existe en la base de datos
     const usuariosRef = collection(db, 'usuarios');
-    const q = query(usuariosRef, where('token_recuperacion', '==', token_recuperacion));
+    const q = query(usuariosRef, where('token_recuperacion', '==', token));
     const querySnapshot = await getDocs(q);
 
     if (!querySnapshot.empty) {
