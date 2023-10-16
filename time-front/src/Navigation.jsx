@@ -2,7 +2,10 @@ import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { useAuth } from "./controladores/AuthProvider";
+import Icon from "react-native-vector-icons/FontAwesome";
+import PaletaColor from "./tema/PaletaColor";
 
 //screens protegidas
 import Home from "./screens/protegidas/Home";
@@ -17,16 +20,37 @@ import OlvideContraseña from "./screens/auth/OlvideContraseña";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
+const MaterialTopTab = createMaterialTopTabNavigator(); // Nueva adición
 
-//Quiero tener rutas protegidas, donde el usuario que este logiado pueda acceder a ellas y el que no este logiado solo pueda acceder a registro, login y olvide mi contraseña
+// Quiero tener rutas protegidas, donde el usuario que esté logeado pueda acceder a ellas y el que no esté logeado solo pueda acceder a registro, login y olvidé mi contraseña
 const Navigation = () => {
   const { currentUser } = useAuth(); // Utiliza la función useAuth para obtener el usuario actual
-  
+
   return (
     <NavigationContainer>
       {currentUser ? ( // Verifica si el usuario está autenticado
         <>
-          <Tab.Navigator>
+          <Tab.Navigator
+            screenOptions={({ route }) => ({
+              tabBarIcon: ({ focused, color, size }) => {
+                let iconName;
+
+                if (route.name === 'Home') {
+                  iconName = focused ? 'home' : 'home';
+                } else if (route.name === 'Resumen') {
+                  iconName = focused ? 'bar-chart' : 'bar-chart';
+                } else if (route.name === 'Perfil') {
+                  iconName = focused ? 'user' : 'user';
+                }
+
+                return <Icon name={iconName} size={size} color={color} />;
+              },
+            })}
+            tabBarOptions={{
+              activeTintColor: PaletaColor.primary,
+              inactiveTintColor: PaletaColor.gray,
+            }}
+          >
             <Tab.Screen name="Home" component={Home} />
             <Tab.Screen name="Resumen" component={Resumen} />
             <Tab.Screen name="Perfil" component={Perfil} />
@@ -62,6 +86,9 @@ const Navigation = () => {
             <Stack.Screen
               name="OlvideContraseña"
               component={OlvideContraseña}
+              options={{
+                headerShown: false,
+              }}
             />
           </Stack.Navigator>
         </>
