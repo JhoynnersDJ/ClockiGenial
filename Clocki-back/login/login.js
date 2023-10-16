@@ -11,19 +11,10 @@ const {
 const { sign } = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const { db } = require('../database/firebase');
-
+const { generarCodigoRecuperacion } = require('../token');
 const router = express.Router();
 const secretToken = "Hl*2l3c#Tl4&Rb2Dp!5s";
 
-function generarCodigoRecuperacion(longitud) {
-    let codigo = '';
-    for (let i = 0; i < longitud; i++) {
-      const digito = Math.floor(Math.random() * 10); // Genera un dígito aleatorio del 0 al 9
-      codigo += digito;
-    }
-    return codigo;
-  }
-  
 // Endpoint para iniciar sesión
 router.post('/login', async (req, res) => {
   try {
