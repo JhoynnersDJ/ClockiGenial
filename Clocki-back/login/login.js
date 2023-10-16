@@ -46,13 +46,20 @@ router.post('/login', async (req, res) => {
       return;
     }
 
+    // Verificar si el usuario está marcado como "verificado"
+    if (!user.verificado) {
+      console.log('Inicio de sesión fallido: Usuario no verificado');
+      res.status(401).json({ error: 'Usuario no verificado' });
+      return;
+    }
+
     // Obtener el ID de rol
     const rolReference = user.rol; // La referencia al documento de rol
 
     const rolSnapshot = await getDoc(rolReference);
     const id_rol = rolSnapshot.data().id_rol;
 
-    // Si las credenciales son correctas, genera un JWT y devuélvelo al cliente
+    // Si las credenciales son correctas y el usuario está verificado, genera un JWT y devuélvelo al cliente
     const token = sign({ email }, secretToken, { expiresIn: '1h' });
 
     console.log('Inicio de sesión exitoso');

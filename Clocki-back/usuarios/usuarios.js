@@ -1,5 +1,5 @@
 const express = require('express');
-const { collection, doc, addDoc} = require('firebase/firestore');
+const { collection, doc, addDoc, query, where, getDocs, updateDoc} = require('firebase/firestore');
 const nodemailer = require('nodemailer');
 const router = express.Router();
 const { db } = require('../database/firebase');
@@ -8,7 +8,15 @@ const { generarCodigoRecuperacion } = require('../token');
 router.post('/registro', async (req, res) => {
   try {
       const { email, password, nombre, apellido } = req.body;
+       // Verificar si el usuario ya está registrado
+      const usuariosRef = collection(db, 'usuarios');
+      const q = query(usuariosRef, where('email', '==', email));
+      const querySnapshot = await getDocs(q);
 
+    if (!querySnapshot.empty) {
+      res.status(200).json({ message: 'El usuario está registrado' });
+      return;
+    }
       // Obtiene la fecha actual en formato ISO y luego la formatea como "dd/mm/yyyy"
       const fechaRegistro = new Date().toLocaleDateString('es-ES');
       
@@ -30,7 +38,6 @@ router.post('/registro', async (req, res) => {
       };
 
       // Guarda el nuevo usuario en Firestore
-      const usuariosRef = collection(db, 'usuarios');
       await addDoc(usuariosRef, usuarioNuevo);
       
       // Envía un correo al usuario
@@ -126,5 +133,39 @@ router.post('/registro', async (req, res) => {
       res.status(500).json({ error: 'Ocurrió un error al guardar el usuario' });
   }
 });
+
+router.post('/validado', async (req, res) => {
+  try {
+    const { email, codigoValidacion } = req.body;
+
+    // Verificar si el correo electrónico y el código de validación coinciden
+    const usuariosRef = collection(db, 'usuarios');
+    const q = query(usuariosRef, where('email', '==', email));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      const userDoc = querySnapshot.docs[0];
+      const userData = userDoc.data();
+
+      if (userData.token_recuperacion === codigoValidacion) {
+        // Actualizar el campo "verificado" del usuario a true y borrar el campo "token_recuperacion"
+        await updateDoc(doc(usuariosRef, userDoc.id), {
+          verificado: true,
+          token_recuperacion: null, // Borra el campo "token_recuperacion"
+        });
+
+        res.status(200).json({ message: 'Usuario validado correctamente' });
+      } else {
+        res.status(401).json({ error: 'Código de validación incorrecto' });
+      }
+    } else {
+      res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+  } catch (error) {
+    console.error('Error al validar el usuario:', error);
+    res.status(500).json({ error: 'Ocurrió un error al validar el usuario' });
+  }
+});
+
 
 module.exports = router;
