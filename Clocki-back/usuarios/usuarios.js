@@ -1,9 +1,8 @@
-const { Router } = require('express');
-const { collection, doc, addDoc } = require('firebase/firestore');
+const express = require('express');
+const { collection, doc, addDoc} = require('firebase/firestore');
 const nodemailer = require('nodemailer');
-const { db } = require('./database/firebase');
-
-const router = Router();
+const router = express.Router();
+const { db } = require('../database/firebase');
 
 router.post('/registro', async (req, res) => {
     try {
@@ -19,7 +18,7 @@ router.post('/registro', async (req, res) => {
             password,
             nombre,
             apellido,
-            verificado: true,
+            verificado: false,
             fecha_registro: fechaRegistro,
             token_recuperacion: tokenRecuperacion,
             rol: doc(db, 'rol', idRol) // Referencia al documento del rol
