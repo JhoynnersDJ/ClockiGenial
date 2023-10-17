@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Image, StatusBar } from "react-native";
 import React from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import PaletaColor from "../../tema/PaletaColor";
@@ -61,8 +61,8 @@ const Bienvenida = ({ navigation }) => {
       ]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1.5, y: 1.5 }}
-    >
-      
+    > 
+      <StatusBar barStyle="light-content" />
       {/* Container Imagenes */}
       <View style={{flex: 1, gap: 20, top: 100}}>
 

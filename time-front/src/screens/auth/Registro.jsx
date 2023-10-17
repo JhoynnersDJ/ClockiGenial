@@ -15,7 +15,7 @@ import {
 import axios from "axios";
 import Icon from "react-native-vector-icons/Fontisto";
 import PaletaColor from "../../tema/PaletaColor";
-import Constants from "expo-constants";
+import LottieView from "lottie-react-native";
 
 
 const Registro = ({ navigation }) => {
@@ -33,6 +33,10 @@ const Registro = ({ navigation }) => {
   const [mostrarConfirmarPassword, setMostrarConfirmarPassword] =
     React.useState(true);
 
+    //Correo de confirmacion
+    const [correoConfirmacion, setCorreoConfirmacion] = React.useState(false);
+    const [codigoConfirmacion, setCodigoConfirmacion] = React.useState("");
+
   const registrarUsuario = async () => {
     if (!nombre.trim()) {
       Alert.alert("Error", "El campo nombre esta vacio");
@@ -44,6 +48,10 @@ const Registro = ({ navigation }) => {
     }
     if (!email.trim()) {
       Alert.alert("Error", "El campo email esta vacio");
+      return;
+    }
+    if (!email.includes("@")) {
+      Alert.alert("Error", "El campo email no es valido");
       return;
     }
     if (!password.trim()) {
@@ -63,15 +71,33 @@ const Registro = ({ navigation }) => {
       return;
     }
     try {
-      const respuesta = await axios.post("http://192.168.1.50:8000/registro", {
+      const respuesta = await axios.post("http://192.168.1.50:7000/usuarios/registro", {
         nombre: nombre,
         apellido: apellido,
         email: email,
         password: password,
       });
-      Alert.alert("Se ha enviado un correo de confirmación");
+      Alert.alert("Exito", "Se ha enviado un correo de confirmación");
+      setCorreoConfirmacion(true);
     } catch (error) {
       console.log(error);
+    }
+  };
+
+  const validarRegistro = async () => {
+    try {
+      const respuesta = await axios.post(
+        "http://192.168.1.50:7000/usuarios/validado",
+        {
+          email: email,
+          codigoValidacion: codigoConfirmacion,
+        }
+      );
+      Alert.alert("Registro validado");
+      navigation.navigate("Login");
+    } catch (error) {
+      console.log(error);
+      Alert.alert("Error", "El codigo de confirmacion no es valido");
     }
   };
 
@@ -132,6 +158,13 @@ const Registro = ({ navigation }) => {
       paddingHorizontal: 22,
       paddingTop: 20,
     },
+    animacion:{
+      width: "100%",
+      alignItems: "center",
+      justifyContent: "center",
+      marginTop: 20,
+      paddingVertical: 10,
+    }
   });
 
   return (
@@ -149,41 +182,57 @@ const Registro = ({ navigation }) => {
       </View>
       {/* Fin Encabezado */}
       {/* Logo */}
-      <View style={styles.containerLogo}>
-        <View
-          style={{
-            width: "100%",
-            alignContent: "center",
-            height: 160,
-            backgroundColor: PaletaColor.primary,
-            borderRadius: 30,
-            marginBottom: 20,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <Text
-            style={{
-              color: PaletaColor.white,
-              fontWeight: "bold",
-              fontSize: 20,
-              top: 40,
-            }}
-          >
-            Bienvenido a OmniTime
-          </Text>
-          <Image
-            source={require("../../icons/fast-time.png")}
-            style={{ width: 200, height: 200, top: 0 }}
-          />
-        </View>
+      <View style={styles.animacion}>
+        <LottieView source={require("../../../assets/Registro.json")} autoPlay loop style={{ width: 180, height: 180 }} />
       </View>
       {/* Fin del Logo */}
+      {/* Condicional de Correo Confirmado */}
+
+      {correoConfirmacion ? (
+
+        <View style={styles.content}>
+          <Text style={{ color: PaletaColor.darkgray, textAlign: "center", fontWeight:400 }}>
+            Se ha enviado un correo de confirmación a <Text style={{color:PaletaColor.primary}}> {email} </Text>
+          </Text>
+          <TextInput
+            style={styles.input}
+            onChangeText={(text) => setCodigoConfirmacion(text)}
+            value={codigoConfirmacion}
+            placeholder="Codigo de confirmacion"
+            keyboardType="numeric"
+            maxLength={6}
+          />
+          <TouchableOpacity
+            style={{
+              width: "100%",
+              height: 50,
+              borderRadius: 50,
+              justifyContent: "center",
+              alignItems: "center",
+              backgroundColor: PaletaColor.primary,
+              marginTop: 5,
+            }}
+            onPress={validarRegistro}
+          >
+            <Text
+              style={{
+                color: PaletaColor.white,
+                fontWeight: "bold",
+              }}
+            >
+              {" "}
+              Validar Registro{" "}
+            </Text>
+          </TouchableOpacity>
+        </View>
+) : (
+  <>
       <KeyboardAvoidingView
         behavior="padding"
         style={styles.content}
         keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 90}
       >
+        {/* Formulario de Registro */}
         <TextInput
           style={styles.input}
           onChangeText={(text) => setNombre(text)}
@@ -200,6 +249,7 @@ const Registro = ({ navigation }) => {
           style={styles.input}
           onChangeText={(text) => setEmail(text)}
           value={email}
+          keyboardType="email-address"
           placeholder="Email"
         />
         <View
@@ -321,11 +371,11 @@ const Registro = ({ navigation }) => {
             style={{
               width: "100%",
               height: 50,
-              borderRadius: 10,
+              borderRadius: 50,
               justifyContent: "center",
               alignItems: "center",
               backgroundColor: PaletaColor.primary,
-              marginTop: 20,
+              marginTop: 5,
             }}
             onPress={registrarUsuario}
           >
@@ -367,13 +417,15 @@ const Registro = ({ navigation }) => {
                   fontWeight: "bold",
                 }}
               >
-                Inicia Sesión
+                Iniciar Sesion
               </Text>
             </TouchableOpacity>
           </View>
         </View>
         {/* Fin Texto de login */}
       </KeyboardAvoidingView>
+                </>
+                )}
     </View>
   );
 };

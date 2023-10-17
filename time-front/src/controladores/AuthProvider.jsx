@@ -1,29 +1,27 @@
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext, useState } from "react";
 
-// Quiero crear un contexto para poder compartir el estado de autenticación entre todos los componentes de mi aplicación
 export const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
-  // Simulamos un usuario
-  const currentUser = false
+  const [currentUser, setCurrentUser] = useState(null);
 
+  //Traere un token que contiene en su interior el usuario, el correo, el nombre y el apellido quiero ser capaz de extraer esos datos y guardarlos en el estado currentUser
+  const signIn = (token) => {
+    setCurrentUser(token);
+  };
+  
+  
   const signOut = () => {
-    console.log("Cerrar sesión");
+    setCurrentUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ currentUser, signOut }}>
+    <AuthContext.Provider value={{ currentUser, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export default AuthProvider;
+export const useAuth = () => useContext(AuthContext);
 
-export const useAuth = () => {
-  const authContext = useContext(AuthContext);
-  if (!authContext) {
-    throw new Error("useAuth debe usarse dentro de un AuthProvider");
-  }
-  return authContext;
-};
+export default AuthProvider;

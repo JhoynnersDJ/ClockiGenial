@@ -1,19 +1,14 @@
 import React from 'react';
 import { View, Text, Button } from 'react-native';
-import { useContext } from '../../controladores/AuthProvider';
+import { useAuth } from '../../controladores/AuthProvider';
 
 function Perfil() {
-    // const { currentUser, signOut } = useAuth();
-
-    //Correo de Ejemplo
-    const currentUser = {email: "richardael14@gmail.com"};
-    const signOut = () => {
-        console.log("Cerrar sesión");
-    }
+  const { currentUser, signOut } = useAuth(); // Utiliza la función useAuth para obtener el usuario actual
 
   return (
     <View>
-      <Text>Usuario actual: {currentUser.email}</Text>
+      <Text>Perfil</Text>
+      <Text>{currentUser.correo}</Text>
       <Button title="Cerrar sesión" onPress={signOut} />
     </View>
   );
