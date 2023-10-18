@@ -1,9 +1,9 @@
 const express = require('express');
 const { collection, doc, addDoc, query, where, getDocs, updateDoc} = require('firebase/firestore');
-const nodemailer = require('nodemailer');
+const nodemailer = require('nodemailer'); //libreria de envio de correos
 const router = express.Router();
 const { db } = require('../database/firebase');
-const { generarCodigoRecuperacion } = require('../token');
+const { generarCodigoRecuperacion } = require('../token'); //importa el codigo en donde se genera el token de 6 digitos
 
 router.post('/registro', async (req, res) => {
   try {
