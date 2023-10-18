@@ -6,6 +6,7 @@ const PaletaColor = {
     white: '#F2F2F2',
     darkgray: '#3d4144',
     gray: '#CCCCCC',
+    lightgray: '#EFEFEF',
     }
 
 export default PaletaColor;

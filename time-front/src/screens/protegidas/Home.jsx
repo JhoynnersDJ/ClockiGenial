@@ -3,7 +3,7 @@ import { Text, View, StyleSheet, TouchableOpacity} from 'react-native'
 import PanelHome from '../../components/home/PanelHome'
 import PaletaColor from '../../tema/PaletaColor'
 import { useAuth } from '../../controladores/AuthProvider';
-import Icon from "react-native-vector-icons/Fontisto";
+import Icon from "react-native-vector-icons/FontAwesome";
 
 const Home = ({navigation}) => {
   const { currentUser } = useAuth(); // Utiliza la función useAuth para obtener el usuario actual
@@ -64,7 +64,7 @@ const Home = ({navigation}) => {
       <View style={styles.header}>
         <Text style={styles.headertitle}> {modulo} </Text>
         <TouchableOpacity onPress={abrirAjustes}>
-          <Icon name="player-settings" size={26} color={PaletaColor.primary} />
+          <Icon name="gear" size={26} color={PaletaColor.primary} />
         </TouchableOpacity>
       </View>
       {modalAjustes && (

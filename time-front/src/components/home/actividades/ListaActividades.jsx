@@ -1,85 +1,176 @@
-import React, { useState } from "react";
-import { Text, View, Button, StyleSheet } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Text, View, Button, StyleSheet, TouchableOpacity } from "react-native";
 import PaletaColor from "../../../tema/PaletaColor";
 import Cronometro from "../Cronometro";
-
-const ActividadesPrueba = [
-    {
-      id: 1,
-      nombre: "Actividad 1",
-      inicio: "2021-05-14T18:00:00.000Z",
-      estado: false,
-      segundos: 58,
-      minutos: 58,
-      horas: 0,
-      tiempo: 0,
-      cronometroActivo: false,
-    },
-    {
-      id: 2,
-      nombre: "Actividad 2",
-      inicio: "2021-05-14T18:00:00.000Z",
-      estado: false,
-      segundos: 0,
-      minutos: 0,
-      horas: 5,
-      tiempo: 0,
-      cronometroActivo: false,
-    }
-  ];
-
+import Icon from "react-native-vector-icons/Fontisto";
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: PaletaColor.white,
     flexDirection: "column",
+    justifyContent: "flex-start",
+    alignItems: "center",
+    marginVertical: 10,
+    gap: 10,
     //Iconos blancos de la statusbar
   },
   tarjeta: {
     width: "100%",
-    height: 100,
     borderRadius: 10,
-    borderColor: PaletaColor.darkgray,
-    borderWidth: 1,
     paddingHorizontal: 20,
     justifyContent: "center",
+    backgroundColor: "white",
+    shadowColor: PaletaColor.black,
+    shadowOpacity: 0.1,
+    shadowOffset: { x: 2, y: 2 },
+    shadowRadius: 3,
+    elevation: 5,
+    zIndex: 999,
     backgroundColor: PaletaColor.white,
+    padding: 15,
   },
   tarjetaTitulo: {
     fontSize: 20,
     fontWeight: "bold",
     color: PaletaColor.darkgray,
-    textAlign: "center",
+  },
+  tarjetafecha: {
+    fontSize: 15,
+    fontWeight: "400",
+    color: PaletaColor.darkgray,
+  },
+  tarjetaproyecto: {
+    fontSize: 15,
+    fontWeight: "400",
+    color: PaletaColor.darkgray,
+  },
+  tarjetatiempo: {
+    fontSize: 15,
+    fontWeight: "400",
+    color: PaletaColor.darkgray,
+  },
+  contenedorfila: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginVertical: 2,
+    gap: 5,
+  },
+  contenedorcolumna: {
+    flexDirection: "column",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginVertical: 2,
+    gap: 5,
+    alignContent: "center",
   },
 });
-const ListaActividades = () => {
-    const [actividades, setActividades] = useState(ActividadesPrueba);
-    const [cronometroActivoId, setCronometroActivoId] = useState(null);
-  
-    const handleActivateCronometro = (id) => {
-      setCronometroActivoId(id);
+const ListaActividades = ({ actividades, setActividadActivada, tiempo, setTiempo }) => {
+  const [actividadSeleccionada, setActividadSeleccionada] = useState(null);
+
+  useEffect(() => {
+    let interval;
+
+    if (actividadSeleccionada !== null && tiempo.encendido) {
+      interval = setInterval(() => {
+        setTiempo((prevTiempo) => {
+          const newTime = { ...prevTiempo };
+
+          if (newTime.segundos === 59) {
+            if (newTime.minutos === 59) {
+              newTime.horas += 1;
+              newTime.minutos = 0;
+              newTime.segundos = 0;
+            } else {
+              newTime.minutos += 1;
+              newTime.segundos = 0;
+            }
+          } else {
+            newTime.segundos += 1;
+          }
+
+          return newTime;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      clearInterval(interval);
     };
-  
-    const handleDeactivateCronometro = () => {
-      setCronometroActivoId(null);
-    };
-  
-    return (
-      <View style={styles.container}>
-        {actividades.map((activity) => (
-          <View style={styles.tarjeta} key={activity.id}>
-            <Text style={styles.tarjetaTitulo}>{activity.nombre}</Text>
-            <Cronometro
-              activity={activity}
-              isActive={cronometroActivoId === activity.id}
-              onActivate={handleActivateCronometro}
-              onDeactivate={handleDeactivateCronometro}
-            />
-          </View>
-        ))}
-      </View>
-    );
+  }, [actividadSeleccionada, tiempo.encendido]);
+
+  const iniciarActividad = (id) => {
+    if (actividadSeleccionada === id) {
+      setActividadSeleccionada(null);
+      setTiempo((prevTiempo) => ({
+        ...prevTiempo,
+        encendido: false,
+      }));
+    } else {
+      setActividadSeleccionada(id);
+      const actividadObtenida = actividades.find((actividad) => actividad.id === id);
+      setTiempo({
+        horas: actividadObtenida.horas,
+        minutos: actividadObtenida.minutos,
+        segundos: actividadObtenida.segundos,
+        encendido: true,
+      });
+      setActividadActivada(actividadObtenida);
+    }
   };
   
-  export default ListaActividades;
+
+  return (
+    <View style={styles.container}>
+      {actividades.map((activity) => (
+        <View style={styles.tarjeta} key={activity.id}>
+          <View style={styles.contenedorfila}>
+            <View style={styles.contenedorcolumna}>
+              <Text style={styles.tarjetaTitulo}>{activity.nombre}</Text>
+              <View style={styles.contenedorfila}>
+                <Icon name="calendar" size={15} color={PaletaColor.darkgray} />
+                <Text style={styles.tarjetafecha}> {activity.inicio} </Text>
+              </View>
+            </View>
+            <View style={styles.contenedorcolumna}>
+              <View style={styles.contenedorfila}>
+                <Icon name="bookmark-alt" size={15} color={PaletaColor.darkgray} />
+                <Text style={styles.tarjetaproyecto}>{activity.proyecto} </Text>
+              </View>
+              <View style={styles.contenedorfila}>
+                <Icon name="clock" size={15} color={PaletaColor.darkgray} />
+                <Text style={styles.tarjetatiempo}>
+                  {tiempo.encendido && actividadSeleccionada === activity.id ? (
+                    <Text>
+                      {tiempo.horas.toString().padStart(2, "0")}:
+                      {tiempo.minutos.toString().padStart(2, "0")}:
+                      {tiempo.segundos.toString().padStart(2, "0")}
+                    </Text>
+                  ) : (
+                    <Text>
+                      {activity.horas.toString().padStart(2, "0")}:
+                      {activity.minutos.toString().padStart(2, "0")}:
+                      {activity.segundos.toString().padStart(2, "0")}
+                    </Text>
+                  )}
+                </Text>
+              </View>
+            </View>
+            {actividadSeleccionada === activity.id ? (
+              <TouchableOpacity onPress={() => iniciarActividad(activity.id)}>
+                <Icon name="pause" size={20} color={PaletaColor.darkgray} />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity onPress={() => iniciarActividad(activity.id)}>
+                <Icon name="play" size={20} color={PaletaColor.darkgray} />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+};
+
+export default ListaActividades;
