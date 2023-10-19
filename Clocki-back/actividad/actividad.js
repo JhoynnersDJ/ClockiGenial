@@ -6,7 +6,7 @@ const {db} = require ('../database/firebase');
 // Ruta para registrar una actividad y su tiempo
 router.post('/registro-actividad', async (req, res) => {
   try {
-    const { nombre_actividad, id_proyecto, id_usuario, horas, minutos, segundos } = req.body;
+    const { nombre_actividad, id_proyecto, id_usuario, horas, minutos, segundos, tarifa } = req.body;
 
     // Obtiene la fecha actual en formato "DD/MM/AA"
     const fechaRegistro = new Date().toLocaleDateString('es-ES');
@@ -22,7 +22,7 @@ router.post('/registro-actividad', async (req, res) => {
         minutos: minutos,
         segundos: segundos,
       },  // Duración total inicial
-      tarifa: null 
+      tarifa: tarifa !== undefined ? tarifa : null, // Si tarifa no está presente, se establece como null
     };
 
     // Guarda la actividad en Firestore y obtén su ID
