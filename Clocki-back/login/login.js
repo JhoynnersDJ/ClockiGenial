@@ -163,10 +163,10 @@ router.post('/olvide-password', async (req, res) => {
         <body>
           <div class="container">
             <h1>Bienvenido a <span class="omnitime">OmniTime</span></h1>
-            <p>¡Gracias <span class="purple-text">${nombre}</span> por registrarte en nuestro servicio! Esperamos que disfrutes de nuestra plataforma.</p>
+            <p>¡Gracias <span class="purple-text"></span> por registrarte en nuestro servicio! Esperamos que disfrutes de nuestra plataforma.</p>
             <p>Su código de verificación es:</p>
             <div class="token-container">
-               <span class="token">${tokenRecuperacion}</span>
+               <span class="token">${codigoRecuperacion}</span>
             </div>
           </div>
         </body>
