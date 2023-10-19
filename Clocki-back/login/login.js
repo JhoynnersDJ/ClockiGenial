@@ -59,6 +59,9 @@ router.post('/login', async (req, res) => {
     const rolSnapshot = await getDoc(rolReference);
     const id_rol = rolSnapshot.data().id_rol;
 
+    // Obtener el ID del usuario
+    const id_usuario = querySnapshot.docs[0].id;
+
     // Si las credenciales son correctas y el usuario está verificado, genera un JWT y devuélvelo al cliente
     const token = sign({ email }, secretToken, { expiresIn: '1h' });
 
@@ -71,6 +74,7 @@ router.post('/login', async (req, res) => {
       apellido: user.apellido,
       correo: user.email,
       id_rol: id_rol,
+      id_usuario
     };
 
     res.status(200).json(response);

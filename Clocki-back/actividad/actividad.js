@@ -21,8 +21,8 @@ router.post('/registro-actividad', async (req, res) => {
         horas: horas,
         minutos: minutos,
         segundos: segundos,
-      },
-      tarifa: null // Duración total inicial
+      },  // Duración total inicial
+      tarifa: null 
     };
 
     // Guarda la actividad en Firestore y obtén su ID
