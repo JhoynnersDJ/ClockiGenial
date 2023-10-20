@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Text, View, Button, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  Text,
+  View,
+  Button,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native";
 import PaletaColor from "../../../tema/PaletaColor";
 import Cronometro from "../Cronometro";
 import Icon from "react-native-vector-icons/Fontisto";
@@ -22,13 +29,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "white",
     shadowColor: PaletaColor.black,
-    shadowOpacity: 0.1,
-    shadowOffset: { x: 2, y: 2 },
-    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
     elevation: 5,
     zIndex: 999,
     backgroundColor: PaletaColor.white,
-    padding: 15,
+    padding: 9,
+    borderWidth: 1,
+    borderColor: PaletaColor.gray,
   },
   tarjetaTitulo: {
     fontSize: 20,
@@ -66,7 +75,15 @@ const styles = StyleSheet.create({
     alignContent: "center",
   },
 });
-const ListaActividades = ({ actividades, setActividadActivada, tiempo, setTiempo }) => {
+const ListaActividades = ({
+  actividades,
+  setActividades,
+  setActividadActivada,
+  tiempo,
+  setTiempo,
+  setMostrarContenido,
+  vermas,
+}) => {
   const [actividadSeleccionada, setActividadSeleccionada] = useState(null);
 
   useEffect(() => {
@@ -100,76 +117,152 @@ const ListaActividades = ({ actividades, setActividadActivada, tiempo, setTiempo
     };
   }, [actividadSeleccionada, tiempo.encendido]);
 
-  const iniciarActividad = (id) => {
-    if (actividadSeleccionada === id) {
-      setActividadSeleccionada(null);
+  const iniciarActividad = (id_actividad) => {
+    if (actividadSeleccionada === id_actividad) {
       setTiempo((prevTiempo) => ({
         ...prevTiempo,
         encendido: false,
       }));
+      setActividadSeleccionada(null);
+      setActividadActivada(null);
     } else {
-      setActividadSeleccionada(id);
-      const actividadObtenida = actividades.find((actividad) => actividad.id === id);
+      setActividadSeleccionada(id_actividad);
+      const actividadObtenida = actividades.find(
+        (actividad) => actividad.id_actividad === id_actividad
+      );
       setTiempo({
-        horas: actividadObtenida.horas,
-        minutos: actividadObtenida.minutos,
-        segundos: actividadObtenida.segundos,
+        horas: actividadObtenida.duracion_total.horas,
+        minutos: actividadObtenida.duracion_total.minutos,
+        segundos: actividadObtenida.duracion_total.segundos,
         encendido: true,
       });
       setActividadActivada(actividadObtenida);
     }
   };
-  
 
   return (
-    <View style={styles.container}>
-      {actividades.map((activity) => (
-        <View style={styles.tarjeta} key={activity.id}>
-          <View style={styles.contenedorfila}>
-            <View style={styles.contenedorcolumna}>
-              <Text style={styles.tarjetaTitulo}>{activity.nombre}</Text>
-              <View style={styles.contenedorfila}>
-                <Icon name="calendar" size={15} color={PaletaColor.darkgray} />
-                <Text style={styles.tarjetafecha}> {activity.inicio} </Text>
+    <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+      <View style={styles.container}>
+      {actividades ? (
+        actividades.map((actividad) =>
+          <View style={styles.tarjeta} key={actividad.id_actividad}>
+            <View style={styles.contenedorfila}>
+              <View style={styles.contenedorcolumna}>
+                <Text style={styles.tarjetaTitulo}>{actividad.nombre_actividad}</Text>
+                <View style={styles.contenedorfila}>
+                  <Icon
+                    name="calendar"
+                    size={15}
+                    color={PaletaColor.darkgray}
+                  />
+                  <Text style={styles.tarjetafecha}> {actividad.fecha_registro} </Text>
+                </View>
               </View>
+              <View style={styles.contenedorcolumna}>
+                <View style={styles.contenedorfila}>
+                  <Icon
+                    name="bookmark-alt"
+                    size={15}
+                    color={PaletaColor.darkgray}
+                  />
+                  <Text style={styles.tarjetaproyecto}>
+                    {/* solo 5 caracteres */}
+                    {actividad.nombre_proyecto}
+                  </Text>
+                </View>
+                <View style={styles.contenedorfila}>
+                  <Icon name="clock" size={15} color={PaletaColor.darkgray} />
+                  <Text style={styles.tarjetatiempo}>
+                    {tiempo.encendido &&
+                    actividadSeleccionada === actividad.id_actividad ? (
+                      <Text>
+                        {tiempo.horas.toString().padStart(2, "0")}
+                        :{tiempo.minutos.toString().padStart(2, "0")}
+                        :{tiempo.segundos.toString().padStart(2, "0")}
+                      </Text>
+                    ) : (
+                      <Text>
+                        {actividad.duracion_total.horas.toString().padStart(2, "0")}
+                        :{actividad.duracion_total.minutos.toString().padStart(2, "0")}
+                        :{actividad.duracion_total.segundos.toString().padStart(2, "0")}
+                      </Text>
+                    )}
+                  </Text>
+                </View>
+              </View>
+              {actividadSeleccionada === actividad.id_actividad ? (
+                <View
+                  style={{
+                    flexDirection: "column",
+                    gap: 20,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <TouchableOpacity>
+                    <Icon
+                      name="more-v-a"
+                      size={16}
+                      color={PaletaColor.darkgray}
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => iniciarActividad(actividad.id_actividad)}
+                  >
+                    <Icon name="pause" size={25} color={PaletaColor.primary} />
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <View
+                  style={{
+                    flexDirection: "column",
+                    gap: 20,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <TouchableOpacity>
+                    <Icon
+                      name="more-v-a"
+                      size={16}
+                      color={PaletaColor.darkgray}
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => iniciarActividad(actividad.id_actividad)}
+                  >
+                    <Icon name="play" size={25} color={PaletaColor.primary} />
+                  </TouchableOpacity>
+                </View>
+              )}
             </View>
-            <View style={styles.contenedorcolumna}>
-              <View style={styles.contenedorfila}>
-                <Icon name="bookmark-alt" size={15} color={PaletaColor.darkgray} />
-                <Text style={styles.tarjetaproyecto}>{activity.proyecto} </Text>
-              </View>
-              <View style={styles.contenedorfila}>
-                <Icon name="clock" size={15} color={PaletaColor.darkgray} />
-                <Text style={styles.tarjetatiempo}>
-                  {tiempo.encendido && actividadSeleccionada === activity.id ? (
-                    <Text>
-                      {tiempo.horas.toString().padStart(2, "0")}:
-                      {tiempo.minutos.toString().padStart(2, "0")}:
-                      {tiempo.segundos.toString().padStart(2, "0")}
-                    </Text>
-                  ) : (
-                    <Text>
-                      {activity.horas.toString().padStart(2, "0")}:
-                      {activity.minutos.toString().padStart(2, "0")}:
-                      {activity.segundos.toString().padStart(2, "0")}
-                    </Text>
-                  )}
-                </Text>
-              </View>
-            </View>
-            {actividadSeleccionada === activity.id ? (
-              <TouchableOpacity onPress={() => iniciarActividad(activity.id)}>
-                <Icon name="pause" size={20} color={PaletaColor.darkgray} />
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity onPress={() => iniciarActividad(activity.id)}>
-                <Icon name="play" size={20} color={PaletaColor.darkgray} />
-              </TouchableOpacity>
-            )}
           </View>
+        )
+      ) : (
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            alignContent: "center",
+            backgroundColor: PaletaColor.primary,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 20,
+              fontWeight: "500",
+              color: PaletaColor.lightgray,
+            }}
+          >
+            No hay actividades
+          </Text>
         </View>
-      ))}
-    </View>
+      )}
+      </View>
+      
+
+    </ScrollView>
   );
 };
 
