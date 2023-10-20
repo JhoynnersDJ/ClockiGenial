@@ -32,30 +32,34 @@ const Navigation = () => {
   return (
     <NavigationContainer>
       {currentUser ? ( // Verifica si el usuario está autenticado
-        <>
+        <View style={{backgroundColor: PaletaColor.white, flex: 1}}>
           <Tab.Navigator
-          //Agrega en screen Options               activeTintColor: PaletaColor.primary, inactiveTintColor: PaletaColor.gray,
-            screenOptions={({ route }) => ({
-              tabBarActiveTintColor: PaletaColor.primary,
-              tabBarInactiveTintColor: PaletaColor.gray,
-              tabBarLabelStyle: { fontSize: 12 },
-              tabBarStyle: { backgroundColor: PaletaColor.white },
-              tabBarIndicatorStyle: { backgroundColor: PaletaColor.primary },
+  // Agrega en screen Options
+  screenOptions={({ route }) => ({
+    tabBarActiveTintColor: PaletaColor.primary,
+    tabBarInactiveTintColor: PaletaColor.gray,
+    tabBarLabelStyle: { fontSize: 12, fontWeight: 'semibold' },
+    tabBarStyle: {
+      height: 60,
+      paddingBottom: 5,
+    },
+    tabBarIndicatorStyle: { backgroundColor: PaletaColor.primary },
 
-              tabBarIcon: ({ focused, color, size }) => {
-                let iconName;
+    tabBarIcon: ({ focused, color, size }) => {
+      let iconName;
 
-                if (route.name === 'Home') {
-                  iconName = focused ? 'home' : 'home';
-                } else if (route.name === 'Resumen') {
-                  iconName = focused ? 'bar-chart' : 'bar-chart';
-                } else if (route.name === 'Perfil') {
-                  iconName = focused ? 'user' : 'user';
-                }
-                return <Icon name={iconName} size={size} color={color} />;
-              },
-            })}
-          >
+      if (route.name === 'Home') {
+        iconName = focused ? 'home' : 'home';
+      } else if (route.name === 'Resumen') {
+        iconName = focused ? 'bar-chart' : 'bar-chart';
+      } else if (route.name === 'Perfil') {
+        iconName = focused ? 'user' : 'user';
+      }
+      return <Icon name={iconName} size={size} color={color} />;
+    },
+  })}
+>
+
             <Tab.Screen name="Home" component={Home}
               options={{
                 headerShown: false,
@@ -64,7 +68,7 @@ const Navigation = () => {
             <Tab.Screen name="Resumen" component={Resumen} />
             <Tab.Screen name="Perfil" component={Perfil} />
           </Tab.Navigator>
-        </>
+        </View>
       ) : (
         <>
           <Stack.Navigator>

@@ -1,19 +1,18 @@
 import React from 'react'
-import { Text, View, StyleSheet, TouchableOpacity} from 'react-native'
+import { Text, View, StyleSheet, TouchableOpacity, TextInput} from 'react-native'
 import PanelHome from '../../components/home/PanelHome'
 import PaletaColor from '../../tema/PaletaColor'
 import { useAuth } from '../../controladores/AuthProvider';
 import Icon from "react-native-vector-icons/FontAwesome";
+import CrearActividad from './Crear/CrearActividad';
+import CrearProyecto from './Crear/CrearProyecto';
 
 const Home = ({navigation}) => {
   const { currentUser } = useAuth(); // Utiliza la función useAuth para obtener el usuario actual
   const [modulo, setModulo] = React.useState('Actividades');
+  const [modalActividad, setModalActividad] = React.useState(false);
+  const [modalProyecto, setModalProyecto] = React.useState(false);
 
-  const [modalAjustes, setModalAjustes] = React.useState(false);
-
-  const abrirAjustes = () => {
-    setModalAjustes(!modalAjustes);
-  };
 
   const styles = StyleSheet.create({
     container: {
@@ -39,46 +38,52 @@ const Home = ({navigation}) => {
     },
     modal: {
       position: "absolute",
-      top: 50,
-      right: 20,
-      width: "20%",
-      height: "20%",
-      backgroundColor: "white",
-      justifyContent: "center",
+      width: "100%",
+      height: "100%",
+      backgroundColor: PaletaColor.white,
+      justifyContent: "flex-start",
       alignItems: "center",
       zIndex: 1,
-      rounded: 10,
-      shadowColor: "#000",
-      shadowOffset: {
-        width: 0,
-        height: 10,
-      },
-      shadowOpacity: 0.25,
-      shadowRadius: 3.84,
-      elevation: 5,
-
     },
   });
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headertitle}> {modulo} </Text>
-        <TouchableOpacity onPress={abrirAjustes}>
-          <Icon name="gear" size={26} color={PaletaColor.primary} />
-        </TouchableOpacity>
+        {
+          modulo === 'Actividades' ?
+          <TouchableOpacity onPress={() => setModalActividad(true)} style={{flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: PaletaColor.lightprimary, padding: 5, borderRadius: 10}}>
+            <Icon name="plus" size={16} color={PaletaColor.primary} />
+            <Text style={{fontSize: 16, fontWeight: "500", color: PaletaColor.primary}}>
+              Crear Actividad
+            </Text>
+          </TouchableOpacity>
+          :
+          <TouchableOpacity onPress={() => setModalProyecto(true)} style={{flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: PaletaColor.lightprimary, padding: 5, borderRadius: 10}}>
+            <Icon name="plus" size={16} color={PaletaColor.primary} />
+            <Text style={{fontSize: 16, fontWeight: "500", color: PaletaColor.primary}}>
+              Crear Proyecto
+            </Text>
+          </TouchableOpacity>
+        }
       </View>
-      {modalAjustes && (
-        //Al Presionar el exterior del menu se cierra
-        <TouchableOpacity
-          onPress={abrirAjustes}
-          style={{flex:1, backgroundColor: "rgba(0,0,0,0.5)", position:"absolute", top:0, left:0, width:"100%", height:"100%", zIndex:1}}
-        >
-          <View style={styles.modal}>
-          <Text>Modal</Text>
-          </View>
-        </TouchableOpacity>
-
-        ) }
+      {/* Crear Actividad */}
+      {
+        modalActividad ?
+        <View style={styles.modal}>
+          <CrearActividad setModalActividad={setModalActividad} />
+        </View>
+        :
+        null
+      }
+      {
+        modalProyecto ?
+        <View style={styles.modal}>
+          <CrearProyecto setModalProyecto={setModalProyecto} />
+        </View>
+        :
+        null
+      }
       <PanelHome modulo={modulo} setModulo={setModulo} />
     </View>
   )
