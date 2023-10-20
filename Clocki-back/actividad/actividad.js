@@ -8,8 +8,10 @@ router.post('/registro-actividad', async (req, res) => {
   try {
     const { nombre_actividad, id_proyecto, id_usuario, horas, minutos, segundos, tarifa } = req.body;
 
-    // Obtiene la fecha actual en formato "DD/MM/AA"
-    const fechaRegistro = new Date().toLocaleDateString('es-ES');
+    // Obtiene la fecha y hora actual
+    const fechaHoraActual = new Date();
+    const fechaActual = fechaHoraActual.toLocaleDateString('es-ES');
+    const horaActual = fechaHoraActual.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
     // 1. Crea un nuevo documento en la colección de actividades
     const actividadesRef = collection(db, 'actividades');
@@ -22,7 +24,10 @@ router.post('/registro-actividad', async (req, res) => {
         minutos: minutos,
         segundos: segundos,
       },  // Duración total inicial
-      tarifa: tarifa !== undefined ? tarifa : null, // Si tarifa no está presente, se establece como null
+      tarifa: tarifa !== undefined ? tarifa : null,
+      completado: false,
+      fecha_registro: fechaActual,
+      hora_registro: horaActual,
     };
 
     // Guarda la actividad en Firestore y obtén su ID
@@ -38,7 +43,8 @@ router.post('/registro-actividad', async (req, res) => {
         minutos: minutos,
         segundos: segundos,
       }, // Duración de la actividad en formato de objeto
-      fecha: fechaRegistro, // Fecha en formato DD/MM/AA
+      fecha: fechaActual, // Fecha en formato DD/MM/AA
+      hora: horaActual, // Hora en formato HH/MM/SS
       nombre_actividad: nombre_actividad, // Nombre de la actividad
     };
 

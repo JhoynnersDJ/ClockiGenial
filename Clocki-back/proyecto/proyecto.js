@@ -6,17 +6,11 @@ const {db} = require ('../database/firebase');
 //registrar un proyecto
 router.post('/registro-proyecto', async (req, res) => {
     try {
-      const { nombre_proyecto, id_cliente, id_actividad } = req.body;
+      const { nombre_proyecto, id_cliente, id_usuario } = req.body;
   
       // Verifica si la actividad existe antes de continuar
-      const actividadRef = doc(db, 'actividades', id_actividad);
-      const actividadSnapshot = await getDoc(actividadRef);
-  
-      if (!actividadSnapshot.exists()) {
-        res.status(404).json({ error: 'La actividad no existe' });
-        return;
-      }
-  
+      const usuarioRef = doc(db, 'usuario', id_usuario);
+
       // Crea un nuevo documento en la colección "proyectos"
       const proyectosRef = collection(db, 'proyectos');
   
@@ -24,7 +18,7 @@ router.post('/registro-proyecto', async (req, res) => {
       const proyectoData = {
         nombre_proyecto: nombre_proyecto,
         cliente: id_cliente ? doc(db, 'clientes', id_cliente) : null, // Referencia al cliente (puede ser nulo)
-        actividad: actividadRef, // Referencia a la actividad (obligatorio)
+        usuario: usuarioRef, // Referencia al usuario (obligatorio)
       };
   
       // Guarda el proyecto en Firestore

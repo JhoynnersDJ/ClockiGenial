@@ -6,6 +6,8 @@ const loginRouter = require('./login/login');
 const actividadRouter = require('./actividad/actividad');
 const proyectoRouter = require('./proyecto/proyecto');
 const clienteRouter = require('./cliente/cliente');
+const listaRouter = require('./lista/lista');
+
 
 const app = express();
 const port = 7000;
@@ -27,6 +29,10 @@ app.use('/proyecto', proyectoRouter);
 
 //Middleware para clientes
 app.use('/cliente', clienteRouter);
+
+//Middleware para lista
+app.use('/lista', listaRouter);
+
 
 app.listen(port, () => {
     console.log(`La aplicación está corriendo en http://localhost:${port}`);
