@@ -1,5 +1,5 @@
 const express = require('express');
-const { collection, query, getDocs, where, orderBy, limit, doc} = require('firebase/firestore');
+const { collection, query, getDocs, where, orderBy, limit, doc, getDoc} = require('firebase/firestore');
 const { db } = require('../database/firebase');
 
 const router = express.Router();
@@ -35,22 +35,24 @@ router.post('/lista-actividad', async (req, res) => {
 
 
 // Ruta para obtener actividades de un usuario por su ID
-router.post('/actividades-por-usuario', async (req, res) => {
+router.get('/actividades-por-usuario/:id_usuario', async (req, res) => {
   try {
-    const { id_usuario } = req.body; // Captura el id_usuario del cuerpo de la solicitud
+    const { id_usuario } = req.params; // Captura el id_usuario de la ruta
 
     // Realiza una consulta para obtener todas las actividades relacionadas con el usuario
     const actividadesRef = collection(db, 'actividades');
     const querySnapshot = await getDocs(
       query(
         actividadesRef,
-        where('usuario', '==', doc(db, 'usuarios/' + id_usuario))
+        where('usuario', '==', doc(db, 'usuarios', id_usuario))
       )
     );
 
-    const actividadesUsuario = querySnapshot.docs.map((doc) => {
+    const actividadesUsuario = [];
+
+    for (const doc of querySnapshot.docs) {
       const data = doc.data();
-      // Selecciona solo los campos que deseas
+      const id_actividad = doc.id; // Agrega el campo id_actividad
       const {
         nombre_actividad,
         completado,
@@ -60,17 +62,33 @@ router.post('/actividades-por-usuario', async (req, res) => {
         fecha_registro,
         hora_registro
       } = data;
-      return {
+
+      let nombre_proyecto = null; // Inicializa como null en caso de que no haya proyecto
+
+      if (proyecto) {
+        // Si hay una referencia al proyecto en la actividad, busca el documento del proyecto
+        const proyectoDocRef = proyecto;
+        const proyectoDocSnapshot = await getDoc(proyectoDocRef);
+
+        if (proyectoDocSnapshot.exists()) {
+          nombre_proyecto = proyectoDocSnapshot.data().nombre_proyecto;
+        }
+      }
+
+      actividadesUsuario.push({
+        id_actividad, // Incluye el campo id_actividad en la respuesta
         nombre_actividad,
         completado,
         duracion_total,
         proyecto,
         tarifa,
         fecha_registro,
-        hora_registro
-      };
-    });
+        hora_registro,
+        nombre_proyecto, // Incluye el campo nombre_proyecto en la respuesta
+      });
+    }
 
+    console.log("Respuesta cliente: ", actividadesUsuario);
     res.status(200).json(actividadesUsuario);
   } catch (error) {
     console.error('Error al obtener actividades por usuario:', error);
