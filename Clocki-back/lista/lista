@@ -70,11 +70,71 @@ router.post('/actividades-por-usuario', async (req, res) => {
         hora_registro
       };
     });
-
     res.status(200).json(actividadesUsuario);
   } catch (error) {
     console.error('Error al obtener actividades por usuario:', error);
     res.status(500).json({ error: 'Ocurrió un error al obtener actividades por usuario' });
+  }
+});
+
+// Ruta para obtener actividades de un usuario y registros de tiempo de esas actividades
+router.post('/actividades-usuario-y-registros', async (req, res) => {
+  try {
+    const { id_usuario } = req.body;
+
+    // Obtener actividades del usuario
+    const actividadesRef = collection(db, 'actividades');
+    const actividadesQuerySnapshot = await getDocs(
+      query(
+        actividadesRef,
+        where('usuario', '==', doc(db, 'usuarios', id_usuario))
+      )
+    );
+
+    const actividadesUsuario = actividadesQuerySnapshot.docs.map((doc) => {
+      const data = doc.data();
+      const {
+        nombre_actividad,
+        completado,
+        duracion_total,
+        proyecto,
+        tarifa,
+        fecha_registro,
+        hora_registro
+      } = data;
+      return {
+        nombre_actividad,
+        completado,
+        duracion_total,
+        proyecto,
+        tarifa,
+        fecha_registro,
+        hora_registro
+      };
+    });
+
+    // Obtener registros de tiempo de esas actividades
+    const registrosTiempoRef = collection(db, 'registro_tiempo');
+    const registrosTiempoQuerySnapshot = await getDocs(
+      query(
+        registrosTiempoRef,
+        where('actividad', 'in', actividadesQuerySnapshot.docs.map(doc => doc.ref))
+      )
+    );
+
+    const registrosTiempo = registrosTiempoQuerySnapshot.docs.map(doc => {
+      const data = doc.data();
+      const { duracion, fecha, hora } = data; // Seleccionar solo los campos que deseas
+      return { duracion, fecha, hora };
+    });
+
+    res.status(200).json({
+      actividadesUsuario,
+      registrosTiempo,
+    });
+  } catch (error) {
+    console.error('Error al obtener actividades y registros de tiempo:', error);
+    res.status(500).json({ error: 'Ocurrió un error al obtener actividades y registros de tiempo' });
   }
 });
 
