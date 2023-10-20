@@ -56,14 +56,18 @@ router.post('/actividades-por-usuario', async (req, res) => {
         completado,
         duracion_total,
         proyecto,
-        tarifa
+        tarifa,
+        fecha_registro,
+        hora_registro
       } = data;
       return {
         nombre_actividad,
         completado,
         duracion_total,
         proyecto,
-        tarifa
+        tarifa,
+        fecha_registro,
+        hora_registro
       };
     });
 
