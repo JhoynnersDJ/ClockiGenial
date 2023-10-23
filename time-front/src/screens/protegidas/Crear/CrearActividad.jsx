@@ -12,7 +12,7 @@ import axios from "axios";
 import { Picker } from '@react-native-picker/picker';
 import { AuthContext } from "../../../controladores/AuthProvider";
 
-const CrearActividad = ({ setModalActividad }) => {
+const CrearActividad = ({ setModalActividad, }) => {
   //Estados de crear Actividad
   const [nombreActividad, setNombreActividad] = React.useState("");
   const [proyectoActividad, setProyectoActividad] = React.useState("");
@@ -147,6 +147,7 @@ const CrearActividad = ({ setModalActividad }) => {
     setProyectoActividad("");
     setFacturableActividad(false);
     setTarifaActividad(0);
+
   };
   return (
     <View style={{ width: "100%", flexDirection: "column", gap:40 }}>

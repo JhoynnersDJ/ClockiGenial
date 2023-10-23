@@ -2,13 +2,16 @@ import React from "react";
 import { Text, View, StyleSheet, TouchableOpacity } from "react-native";
 import PaletaColor from "../../../tema/PaletaColor";
 import Icon from "react-native-vector-icons/Fontisto";
-import Cronometro from "../Cronometro";
 
 const ActividadActiva = ({
   actividadseleccionada,
   tiempo,
   setModalDetalles,
   modalDetalles,
+  setTiempo,
+  cronometro,
+  setCronometro,
+  iniciarCronometro,
 }) => {
   const styles = StyleSheet.create({
     container: {
@@ -40,6 +43,7 @@ const ActividadActiva = ({
       color: PaletaColor.lightgray,
     },
   });
+
 
   return (
     <View style={{ flex: 1 }}>
@@ -81,9 +85,9 @@ const ActividadActiva = ({
           <View style={styles.container}>
             <View>
               <Text style={styles.tiempo}>
-              {tiempo.horas.toString().padStart(2, "0")}
-                        :{tiempo.minutos.toString().padStart(2, "0")}
-                        :{tiempo.segundos.toString().padStart(2, "0")}
+                {tiempo.horas.toString().padStart(2, "0")}:
+                {tiempo.minutos.toString().padStart(2, "0")}:
+                {tiempo.segundos.toString().padStart(2, "0")}
               </Text>
               <View
                 style={{
@@ -101,14 +105,33 @@ const ActividadActiva = ({
                 </Text>
               </View>
             </View>
-            <View>
-              {
-                modalDetalles ? 
-                <Icon name="angle-down" size={30} color={PaletaColor.white} />
-                :
-                <Icon name="angle-right" size={30} color={PaletaColor.white} />
-              }
-             
+            <View
+              style={{
+                flexDirection: "column",
+                justifyContent: "space-between",
+                alignItems: "center",  
+                gap: 20,
+                flex:1,
+                alignContent: 'flex-end',
+                paddingVertical: 10,
+              }}
+            >
+      <TouchableOpacity onPress={iniciarCronometro}>
+        {cronometro ? (
+          <Icon name="pause" size={30} color={PaletaColor.white} />
+        ) : (
+          <Icon name="play" size={30} color={PaletaColor.white} />
+        )}
+      </TouchableOpacity>
+      <Text style={{ fontSize: 12, fontWeight: "500", color: PaletaColor.white }}>
+        Ver Detalles {
+          modalDetalles ? (
+            <Icon name="angle-down" size={12} color={PaletaColor.white} />
+          ) : (
+            <Icon name="angle-right" size={12} color={PaletaColor.white} />
+          )
+        }
+      </Text>
             </View>
           </View>
         </TouchableOpacity>

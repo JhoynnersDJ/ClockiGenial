@@ -10,7 +10,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 0,
     backgroundColor: PaletaColor.primary,
-    padding: 40,
+    padding: 30,
     borderTopLeftRadius: 50,
     borderTopRightRadius: 50,
     height: "70%",
@@ -65,6 +65,12 @@ const DetallesActividad = ({
   modalDetalles,
   setActividadActivada,
   setTiempo,
+  cronometro,
+  iniciarCronometro,
+  setCronometro,
+  registroTiempo,
+  actividadRegistrada,
+  setActividadRegistrada,
 }) => {
 
   const stopActividad = async () => {
@@ -79,16 +85,19 @@ const DetallesActividad = ({
       }
     );
     setModalDetalles(!modalDetalles);
-    setTiempo({
-      horas: 0,
-      minutos: 0,
-      segundos: 0,
-      encendido: false,
-    });
-
+    setActividadActivada(null);
+    setCronometro(null);
     console.log(data);
     
     }
+
+    const resetActividad = async () => {
+      setTiempo({
+        segundos: 0,
+        minutos: 0,
+        horas: 0,
+      });
+      }
 
   return (
     <View style={styles.container}>
@@ -112,9 +121,17 @@ const DetallesActividad = ({
             </View>
         </View>
         <View style={styles.encabezadodetalles}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap:5 }}>
+            <Icon name="hourglass" size={20} color={PaletaColor.lightgray} />
+            <Text style={styles.textodetalle}>Duracion Total: 
+            {" "} {actividadseleccionada.duracion_total.horas.toString().padStart(2, "0")}:{actividadseleccionada.duracion_total.minutos.toString().padStart(2, "0")}:{actividadseleccionada.duracion_total.segundos.toString().padStart(2, "0")}
+            </Text>
+            </View>
+        </View>
+        <View style={styles.encabezadodetalles}>
         <View style={{ flexDirection: "row", alignItems: "center", gap:5 }}>
             <Icon name="calendar" size={20} color={PaletaColor.lightgray} />
-            <Text style={styles.textodetalle}>Inicio: {actividadseleccionada.fecha_registro}</Text>
+            <Text style={styles.textodetalle}>Fecha: {actividadseleccionada.fecha_registro}</Text>
             </View>
             <View style={{ flexDirection: "row", alignItems: "center", gap:5 }}>
             <Text style={styles.textodetalle}>Tarifa: {actividadseleccionada.tarifa}</Text>
@@ -128,133 +145,66 @@ const DetallesActividad = ({
         style={{
           flexDirection: "row",
           justifyContent: "space-between",
-          marginTop: 20,
+          marginVertical: 10,
         }}
       >
         {/* Reset */}
-        <TouchableOpacity style={{ flex: 1, alignItems: "center" }}>
+        <TouchableOpacity style={{ flex: 1, alignItems: "center" }} onPress={resetActividad}>
             <Icon name="undo" size={30} color={PaletaColor.lightgray} />
         </TouchableOpacity>
-        <TouchableOpacity style={{ flex: 1, alignItems: "center" }}>
-          <Icon name="pause" size={30} color={PaletaColor.lightgray} />
+        {/* Play/Pause */}
+        <TouchableOpacity style={{ flex: 1, alignItems: "center", backgroundColor: "lightgray", padding:5, borderWidth:1, borderRadius:100, borderColor: PaletaColor.lightgray
+      
+      }} onPress={iniciarCronometro}>
+          {cronometro ? (
+            <Icon name="pause" size={30} color={PaletaColor.primary} />
+          ) : (
+            <Icon name="play" size={30} color={PaletaColor.primary} />
+          )}
         </TouchableOpacity>
         <TouchableOpacity style={{ flex: 1, alignItems: "center" }} onPress={stopActividad}>
           <Icon name="stop" size={30} color={PaletaColor.lightgray} />
         </TouchableOpacity>
       </View>
       {/* Lista de Intervalos */}
-      <View style={{ marginTop: 20, flex: 1,  alignItems: "center", justifyContent: "center" }}>
+      <View style={{ flex: 1,  alignItems: "center", justifyContent: "center"}}>
         <ScrollView //Horizontal
             style={{ flex: 1 }}
             >
-            <View
-                style={{
-                flexDirection: "row",
-                //Quiero centrado todo
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: 10,
-                marginTop: 10,
-                borderColor: PaletaColor.lightgray,
-                borderWidth: 1,
-                borderRadius: 10,
-                padding: 10,
-                paddingHorizontal: 10,
-                gap:20
-                }}
-            >
-                <View style={{ flexDirection: "column", alignItems: "center" }}>
-                <View style={{ flexDirection: "row", alignItems: "center", gap:10 }}>
-                <Icon name="pause" size={20} color={PaletaColor.lightgray} />
-                <Text style={styles.textodetalle}>Intervalo:</Text>
-                </View>
-                </View>
-                <View style={{ flexDirection: "column" }}>
-                <Text style={styles.textodetalle}>Inicio: 19-12-23</Text>
-                <Text style={styles.textodetalle}>Duracion: 00:00:00</Text>
-                </View>
-            </View>
-            <View
-                style={{
-                flexDirection: "row",
-                //Quiero centrado todo
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: 10,
-                marginTop: 10,
-                borderColor: PaletaColor.lightgray,
-                borderWidth: 1,
-                borderRadius: 10,
-                padding: 10,
-                paddingHorizontal: 10,
-                gap:20
-                }}
-            >
-                <View style={{ flexDirection: "column", alignItems: "center" }}>
-                <View style={{ flexDirection: "row", alignItems: "center", gap:10 }}>
-                <Icon name="pause" size={20} color={PaletaColor.lightgray} />
-                <Text style={styles.textodetalle}>Intervalo:</Text>
-                </View>
-                </View>
-                <View style={{ flexDirection: "column" }}>
-                <Text style={styles.textodetalle}>Inicio: 19-12-23</Text>
-                <Text style={styles.textodetalle}>Duracion: 00:00:00</Text>
-                </View>
-            </View>
-            <View
-                style={{
-                flexDirection: "row",
-                //Quiero centrado todo
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: 10,
-                marginTop: 10,
-                borderColor: PaletaColor.lightgray,
-                borderWidth: 1,
-                borderRadius: 10,
-                padding: 10,
-                paddingHorizontal: 10,
-                gap:20
-                }}
-            >
-                <View style={{ flexDirection: "column", alignItems: "center" }}>
-                <View style={{ flexDirection: "row", alignItems: "center", gap:10 }}>
-                <Icon name="pause" size={20} color={PaletaColor.lightgray} />
-                <Text style={styles.textodetalle}>Intervalo:</Text>
-                </View>
-                </View>
-                <View style={{ flexDirection: "column" }}>
-                <Text style={styles.textodetalle}>Inicio: 19-12-23</Text>
-                <Text style={styles.textodetalle}>Duracion: 00:00:00</Text>
-                </View>
-            </View>
-            <View
-                style={{
-                flexDirection: "row",
-                //Quiero centrado todo
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: 10,
-                marginTop: 10,
-                borderColor: PaletaColor.lightgray,
-                borderWidth: 1,
-                borderRadius: 10,
-                padding: 10,
-                paddingHorizontal: 10,
-                gap:20
-                }}
-            >
-                <View style={{ flexDirection: "column", alignItems: "center" }}>
-                <View style={{ flexDirection: "row", alignItems: "center", gap:10 }}>
-                <Icon name="pause" size={20} color={PaletaColor.lightgray} />
-                <Text style={styles.textodetalle}>Intervalo:</Text>
-                </View>
-                </View>
-                <View style={{ flexDirection: "column" }}>
-                <Text style={styles.textodetalle}>Inicio: 19-12-23</Text>
-                <Text style={styles.textodetalle}>Duracion: 00:00:00</Text>
-                </View>
-            </View>
+                    {actividadRegistrada ? (
+                        actividadRegistrada.map((item, index) => (
+                            <View
+                            key={index}
+                            style={{
+                                flexDirection: "row",
+                                //Quiero centrado todo
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                marginBottom: 10,
+                                marginTop: 10,
+                                borderColor: PaletaColor.lightgray,
+                                borderWidth: 1,
+                                borderRadius: 10,
+                                padding: 10,
+                                paddingHorizontal: 10,
+                                gap:20
+                            }}
+                            >
+                            <View style={{ flexDirection: "column", alignItems: "center" }}>
+                                <View style={{ flexDirection: "row", alignItems: "center", gap:10 }}>
+                                <Icon name="pause" size={20} color={PaletaColor.lightgray} />
+                                <Text style={styles.textodetalle}>Intervalo:</Text>
+                                </View>
+                            </View>
+                            <View style={{ flexDirection: "column" }}>
+                                <Text style={styles.textodetalle}>Inicio: {item.fecha}</Text>
+                                <Text style={styles.textodetalle}>Duracion: {item.duracion.horas.toString().padStart(2, "0")}:{item.duracion.minutos.toString().padStart(2, "0")}:{item.duracion.segundos.toString().padStart(2, "0")}</Text>
+                            </View>
+                            </View>
+                        ))
+                    ) : (
+                        <Text>No hay intervalos</Text>
+                    )}
             <View
                 style={{
                 flexDirection: "row",
@@ -289,13 +239,16 @@ const DetallesActividad = ({
       {/* Completar Tarea */}
       <View
         style={{
-          marginTop: 20,
+          flexDirection: "row",
           borderColor: PaletaColor.lightgray,
           borderWidth: 1,
           borderRadius: 10,
             padding: 10,
             backgroundColor: PaletaColor.white,
             paddingHorizontal: 20,
+            alignItems: "center",
+            justifyContent: "center",
+            
         }}
       >
         <TouchableOpacity

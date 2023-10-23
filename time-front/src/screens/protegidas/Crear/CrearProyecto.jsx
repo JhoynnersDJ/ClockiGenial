@@ -26,7 +26,7 @@ const CrearProyecto = ({ setModalProyecto }) => {
       return;
     }
     axios // Petición POST para crear un proyecto
-        .post('http://192.168.1.50:7000/proyecto/registrar-proyecto', proyecto)
+        .post('http://192.168.1.50:7000/proyecto/registro-proyecto', proyecto)
         .then((res) => {
           Alert.alert('Éxito', res.data.mensaje);
         })
@@ -37,9 +37,9 @@ const CrearProyecto = ({ setModalProyecto }) => {
 
     //EstadoUsuario
     const proyecto = {
-        nombre: nombreProyecto,
-        cliente: clienteProyecto,
-        usuario: currentUser._id,
+        nombre_proyecto: nombreProyecto,
+        id_cliente: clienteProyecto,
+        id_usuario: currentUser.id_usuario,
         };
 
     const styles = StyleSheet.create({
