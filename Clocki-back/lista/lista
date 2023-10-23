@@ -180,8 +180,9 @@ router.get('/actividades-por-usuario/:id_usuario', async (req, res) => {
 
     const registrosTiempo = registrosTiempoQuerySnapshot.docs.map(doc => {
       const data = doc.data();
-      const { duracion, fecha, hora } = data; // Seleccionar solo los campos que deseas
-      return { duracion, fecha, hora };
+      const { duracion, fecha, hora, actividad } = data; // Incluye el campo actividad
+      const id_actividad = actividad.id; // Agrega el campo id_actividad
+      return { id_actividad, duracion, fecha, hora };
     });
 
     res.status(200).json({
