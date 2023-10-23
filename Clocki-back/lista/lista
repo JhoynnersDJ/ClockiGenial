@@ -33,9 +33,9 @@ router.post('/lista-actividad', async (req, res) => {
   }
 });
 
-
+//---------------------------------------------------------------------------------------
 // Ruta para obtener actividades de un usuario por su ID
-router.get('/actividades-por-usuario/:id_usuario', async (req, res) => {
+router.get('/actividades-por-usuario-ANTIGUO/:id_usuario', async (req, res) => {
   try {
     const { id_usuario } = req.params; // Captura el id_usuario de la ruta
 
@@ -87,19 +87,37 @@ router.get('/actividades-por-usuario/:id_usuario', async (req, res) => {
         nombre_proyecto, // Incluye el campo nombre_proyecto en la respuesta
       });
     }
+// Obtener registros de tiempo de esas actividades
+const registrosTiempoRef = collection(db, 'registro_tiempo');
+const registrosTiempoQuerySnapshot = await getDocs(
+  query(
+    registrosTiempoRef,
+    where('actividad', 'in', querySnapshot.docs.map(doc => doc.ref))
+  )
+);
 
-    console.log("Respuesta cliente: ", actividadesUsuario);
-    res.status(200).json(actividadesUsuario);
+const registrosTiempo = registrosTiempoQuerySnapshot.docs.map(doc => {
+  const data = doc.data();
+  const { duracion, fecha, hora } = data; // Seleccionar solo los campos que deseas
+  return { duracion, fecha, hora };
+});
+    console.log("Respuesta cliente: ", actividadesUsuario, registrosTiempo);
+    res.status(200).json(actividadesUsuario, registrosTiempo);
   } catch (error) {
     console.error('Error al obtener actividades por usuario:', error);
     res.status(500).json({ error: 'Ocurrió un error al obtener actividades por usuario' });
   }
 });
+//----------------------------------------------------------------------------------------------------
+
+
+
+
 
 // Ruta para obtener actividades de un usuario y registros de tiempo de esas actividades
-router.post('/actividades-usuario-y-registros', async (req, res) => {
+router.get('/actividades-por-usuario/:id_usuario', async (req, res) => {
   try {
-    const { id_usuario } = req.body;
+    const { id_usuario } = req.params; // Captura el id_usuario de la URL
 
     // Obtener actividades del usuario
     const actividadesRef = collection(db, 'actividades');
@@ -110,8 +128,11 @@ router.post('/actividades-usuario-y-registros', async (req, res) => {
       )
     );
 
-    const actividadesUsuario = actividadesQuerySnapshot.docs.map((doc) => {
+    const actividadesUsuario = [];
+
+    for (const doc of actividadesQuerySnapshot.docs) {
       const data = doc.data();
+      const id_actividad = doc.id; // Agrega el campo id_actividad
       const {
         nombre_actividad,
         completado,
@@ -121,16 +142,32 @@ router.post('/actividades-usuario-y-registros', async (req, res) => {
         fecha_registro,
         hora_registro
       } = data;
-      return {
+
+      let nombre_proyecto = null; // Inicializa como null en caso de que no haya proyecto
+
+      if (proyecto) {
+        // Si hay una referencia al proyecto en la actividad, busca el documento del proyecto
+        const proyectoDocRef = proyecto;
+        const proyectoDocSnapshot = await getDoc(proyectoDocRef);
+
+        if (proyectoDocSnapshot.exists()) {
+          nombre_proyecto = proyectoDocSnapshot.data().nombre_proyecto;
+        }
+      }
+
+      // Incluye el campo nombre_proyecto en el objeto de actividad
+      actividadesUsuario.push({
+        id_actividad,
         nombre_actividad,
         completado,
         duracion_total,
         proyecto,
         tarifa,
         fecha_registro,
-        hora_registro
-      };
-    });
+        hora_registro,
+        nombre_proyecto,
+      });
+    }
 
     // Obtener registros de tiempo de esas actividades
     const registrosTiempoRef = collection(db, 'registro_tiempo');
@@ -156,6 +193,5 @@ router.post('/actividades-usuario-y-registros', async (req, res) => {
     res.status(500).json({ error: 'Ocurrió un error al obtener actividades y registros de tiempo' });
   }
 });
-
 module.exports = router;
 
