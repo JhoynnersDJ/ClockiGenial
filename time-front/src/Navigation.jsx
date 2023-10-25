@@ -66,7 +66,11 @@ const Navigation = () => {
               }}
             />
             <Tab.Screen name="Resumen" component={Resumen} />
-            <Tab.Screen name="Perfil" component={Perfil} />
+            <Tab.Screen name="Perfil" component={Perfil}
+            options={{
+              headerShown: false,
+            }}
+            />
           </Tab.Navigator>
         </View>
       ) : (

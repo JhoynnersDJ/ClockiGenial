@@ -1,13 +1,11 @@
 import React from 'react';
 import { Text, View } from 'react-native';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { createStackNavigator } from '@react-navigation/stack';
 import Actividades from './actividades/Actividades';
 import Proyectos from './Proyectos';
 import PaletaColor from '../../tema/PaletaColor';
 
 const PanelHome = ({modulo, setModulo}) => {
-  const Stack = createStackNavigator();
   const TabTop = createMaterialTopTabNavigator();
 
   //Quiero que si mi panel muestra Actividades Modulo sea Actividades y si muestra Proyectos Modulo sea Proyectos
