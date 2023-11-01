@@ -1,130 +1,206 @@
 const express = require('express');
-const { collection, query, getDocs, where, orderBy, limit, doc, getDoc } = require('firebase/firestore');
+const { collection, query, getDocs, where, orderBy, limit, doc, getDoc} = require('firebase/firestore');
 const { db } = require('../database/firebase');
 
 const router = express.Router();
 
-module.exports = (io) => {
-  // Ruta para obtener todos los registros de tiempo de una actividad
-  router.post('/lista-actividad', async (req, res) => {
-    try {
-      const { id_actividad } = req.body;
-      console.log('Valor de id_actividad:', id_actividad);
+// Ruta para obtener todos los registros de tiempo de una actividad
+router.post('/lista-actividad', async (req, res) => {
+  try {
+    const { id_actividad } = req.body;
+    console.log('Valor de id_actividad:', id_actividad);
 
-      // Realiza una consulta para obtener todos los registros de tiempo relacionados con la actividad
-      const registroTiempoRef = collection(db, 'registro_tiempo');
-      const querySnapshot = await getDocs(registroTiempoRef);
+    // Realiza una consulta para obtener todos los registros de tiempo relacionados con la actividad
+    const registroTiempoRef = collection(db, 'registro_tiempo');
+    const querySnapshot = await getDocs(registroTiempoRef);
 
-      const registrosTiempo = [];
+    const registrosTiempo = [];
 
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        if (data.actividad.id === id_actividad) {
-          // Filtra los campos que deseas
-          const { nombre_actividad, duracion, fecha } = data;
-          registrosTiempo.push({ nombre_actividad, duracion, fecha });
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      if (data.actividad.id === id_actividad) {
+        // Filtra los campos que deseas
+        const { nombre_actividad, duracion, fecha } = data;
+        registrosTiempo.push({ nombre_actividad, duracion, fecha });
+      }
+    });
+
+    console.log('Contenido de registrosTiempo:', registrosTiempo); // Agrega esta línea para imprimir en la consola
+    res.status(200).json(registrosTiempo);
+  } catch (error) {
+    console.error('Error al obtener registros de tiempo:', error);
+    res.status(500).json({ error: 'Ocurrió un error al obtener registros de tiempo' });
+  }
+});
+
+//---------------------------------------------------------------------------------------
+// Ruta para obtener actividades de un usuario por su ID
+router.get('/actividades-por-usuario-ANTIGUO/:id_usuario', async (req, res) => {
+  try {
+    const { id_usuario } = req.params; // Captura el id_usuario de la ruta
+
+    // Realiza una consulta para obtener todas las actividades relacionadas con el usuario
+    const actividadesRef = collection(db, 'actividades');
+    const querySnapshot = await getDocs(
+      query(
+        actividadesRef,
+        where('usuario', '==', doc(db, 'usuarios', id_usuario))
+      )
+    );
+
+    const actividadesUsuario = [];
+
+    for (const doc of querySnapshot.docs) {
+      const data = doc.data();
+      const id_actividad = doc.id; // Agrega el campo id_actividad
+      const {
+        nombre_actividad,
+        completado,
+        duracion_total,
+        proyecto,
+        tarifa,
+        fecha_registro,
+        hora_registro
+      } = data;
+
+      let nombre_proyecto = null; // Inicializa como null en caso de que no haya proyecto
+
+      if (proyecto) {
+        // Si hay una referencia al proyecto en la actividad, busca el documento del proyecto
+        const proyectoDocRef = proyecto;
+        const proyectoDocSnapshot = await getDoc(proyectoDocRef);
+
+        if (proyectoDocSnapshot.exists()) {
+          nombre_proyecto = proyectoDocSnapshot.data().nombre_proyecto;
         }
-      });
-
-      console.log('Contenido de registrosTiempo:', registrosTiempo); // Agrega esta línea para imprimir en la consola
-      res.status(200).json(registrosTiempo);
-    } catch (error) {
-      console.error('Error al obtener registros de tiempo:', error);
-      res.status(500).json({ error: 'Ocurrió un error al obtener registros de tiempo' });
-    }
-  });
-
-  // Ruta para obtener actividades de un usuario y registros de tiempo de esas actividades con Socket.io
-  router.get('/actividades-por-usuario/:id_usuario', async (req, res) => {
-    try {
-      const { id_usuario } = req.params; // Captura el id_usuario de la URL
-
-      // Obtener actividades del usuario
-      const actividadesRef = collection(db, 'actividades');
-      const actividadesQuerySnapshot = await getDocs(
-        query(
-          actividadesRef,
-          where('usuario', '==', doc(db, 'usuarios', id_usuario))
-        )
-      );
-
-      const actividadesUsuario = [];
-
-      for (const doc of actividadesQuerySnapshot.docs) {
-        const data = doc.data();
-        const id_actividad = doc.id; // Agrega el campo id_actividad
-        const {
-          nombre_actividad,
-          completado,
-          duracion_total,
-          proyecto,
-          tarifa,
-          fecha_registro,
-          hora_registro
-        } = data;
-
-        let nombre_proyecto = null; // Inicializa como null en caso de que no haya proyecto
-
-        if (proyecto) {
-          // Si hay una referencia al proyecto en la actividad, busca el documento del proyecto
-          const proyectoDocRef = proyecto;
-          const proyectoDocSnapshot = await getDoc(proyectoDocRef);
-
-          if (proyectoDocSnapshot.exists()) {
-            nombre_proyecto = proyectoDocSnapshot.data().nombre_proyecto;
-          }
-        }
-
-        // Incluye el campo nombre_proyecto en el objeto de actividad
-        actividadesUsuario.push({
-          id_actividad,
-          nombre_actividad,
-          completado,
-          duracion_total,
-          proyecto,
-          tarifa,
-          fecha_registro,
-          hora_registro,
-          nombre_proyecto,
-        });
       }
 
-      // Obtener registros de tiempo de esas actividades
-      const registrosTiempoRef = collection(db, 'registro_tiempo');
+      actividadesUsuario.push({
+        id_actividad, // Incluye el campo id_actividad en la respuesta
+        nombre_actividad,
+        completado,
+        duracion_total,
+        proyecto,
+        tarifa,
+        fecha_registro,
+        hora_registro,
+        nombre_proyecto, // Incluye el campo nombre_proyecto en la respuesta
+      });
+    }
+// Obtener registros de tiempo de esas actividades
+const registrosTiempoRef = collection(db, 'registro_tiempo');
+const registrosTiempoQuerySnapshot = await getDocs(
+  query(
+    registrosTiempoRef,
+    where('actividad', 'in', querySnapshot.docs.map(doc => doc.ref))
+  )
+);
+
+const registrosTiempo = registrosTiempoQuerySnapshot.docs.map(doc => {
+  const data = doc.data();
+  const { duracion, fecha, hora } = data; // Seleccionar solo los campos que deseas
+  return { duracion, fecha, hora };
+});
+    console.log("Respuesta cliente: ", actividadesUsuario, registrosTiempo);
+    res.status(200).json(actividadesUsuario, registrosTiempo);
+  } catch (error) {
+    console.error('Error al obtener actividades por usuario:', error);
+    res.status(500).json({ error: 'Ocurrió un error al obtener actividades por usuario' });
+  }
+});
+//----------------------------------------------------------------------------------------------------
+
+
+
+
+
+// Ruta para obtener actividades de un usuario y registros de tiempo de esas actividades
+router.get('/actividades-por-usuario/:id_usuario', async (req, res) => {
+  try {
+    const { id_usuario } = req.params; // Captura el id_usuario de la URL
+
+    const actividadesRef = collection(db, 'actividades');
+    const actividadesQuerySnapshot = await getDocs(
+      query(
+        actividadesRef,
+        where('usuario', '==', doc(db, 'usuarios', id_usuario))
+      )
+    );
+
+    const actividadesUsuario = [];
+    const actividadRefs = [];
+
+    for (const doc of actividadesQuerySnapshot.docs) {
+      const id_actividad = doc.id;
+      actividadRefs.push(doc.ref);
+
+      const data = doc.data();
+      const {
+        nombre_actividad,
+        completado,
+        duracion_total,
+        proyecto,
+        tarifa,
+        fecha_registro,
+        hora_registro
+      } = data;
+
+      let nombre_proyecto = null;
+
+      if (proyecto) {
+        const proyectoDocRef = proyecto;
+        const proyectoDocSnapshot = await getDoc(proyectoDocRef);
+
+        if (proyectoDocSnapshot.exists()) {
+          nombre_proyecto = proyectoDocSnapshot.data().nombre_proyecto;
+        }
+      }
+
+      actividadesUsuario.push({
+        id_actividad,
+        nombre_actividad,
+        completado,
+        duracion_total,
+        proyecto,
+        tarifa,
+        fecha_registro,
+        hora_registro,
+        nombre_proyecto,
+      });
+    }
+
+    const registrosTiempoRef = collection(db, 'registro_tiempo');
+    const registrosTiempo = [];
+
+    const batchSize = 30;
+    for (let i = 0; i < actividadRefs.length; i += batchSize) {
+      const batch = actividadRefs.slice(i, i + batchSize);
       const registrosTiempoQuerySnapshot = await getDocs(
-        query(
-          registrosTiempoRef,
-          where('actividad', 'in', actividadesQuerySnapshot.docs.map(doc => doc.ref))
-        )
+        query(registrosTiempoRef, where('actividad', 'in', batch))
       );
 
-      const registrosTiempo = registrosTiempoQuerySnapshot.docs.map(doc => {
+      registrosTiempoQuerySnapshot.forEach(doc => {
         const data = doc.data();
-        const { duracion, fecha, hora, actividad } = data; // Incluye el campo actividad
-        const id_actividad = actividad.id; // Agrega el campo id_actividad
-        return { id_actividad, duracion, fecha, hora };
-      });
+        const { duracion, fecha, hora, actividad } = data;
+        const id_actividad = actividad.id;
 
-      // Emitir los datos a través de Socket.io
-      io.emit('actividadesPorUsuario', {
-        actividadesUsuario,
-        registrosTiempo,
+        registrosTiempo.push({
+          id_actividad,
+          duracion,
+          fecha,
+          hora,
+        });
       });
-// Console.log de la respuesta enviada a través de Socket.io
-console.log('Respuesta enviada a través de Socket.io:', {
-  actividadesUsuario,
-  registrosTiempo,
-});
-      // Respondemos a la solicitud HTTP
-      res.status(200).json({
-        actividadesUsuario,
-        registrosTiempo,
-      });
-    } catch (error) {
-      console.error('Error al obtener actividades y registros de tiempo:', error);
-      res.status(500).json({ error: 'Ocurrió un error al obtener actividades y registros de tiempo' });
     }
-  });
 
-  return router;
-};
+    res.status(200).json({
+      actividadesUsuario,
+      registrosTiempo,
+    });
+  } catch (error) {
+    console.error('Error al obtener actividades y registros de tiempo:', error);
+    res.status(500).json({ error: 'Ocurrió un error al obtener actividades y registros de tiempo' });
+  }
+});
+module.exports = router;
+

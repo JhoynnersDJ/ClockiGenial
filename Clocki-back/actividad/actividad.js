@@ -33,7 +33,7 @@ router.post('/registro-actividad', async (req, res) => {
     // Guarda la actividad en Firestore y obtén su ID
     const nuevaActividadRef = await addDoc(actividadesRef, actividadData);
     const actividadId = nuevaActividadRef.id;
-
+    actividadData.id_actividad = actividadId;
     // 2. Crea un nuevo documento en la colección de registro de tiempo
     const registroTiempoRef = collection(db, 'registro_tiempo');
     const tiempoData = {
@@ -51,7 +51,7 @@ router.post('/registro-actividad', async (req, res) => {
     // Guarda el registro de tiempo en Firestore
     await addDoc(registroTiempoRef, tiempoData);
 
-    res.status(201).json({ message: 'Actividad y tiempo registrados con éxito' });
+    res.status(201).json({ actividadData });
   } catch (error) {
     console.error('Error al registrar actividad y tiempo:', error);
     res.status(500).json({ error: 'Ocurrió un error al registrar actividad y tiempo' });
