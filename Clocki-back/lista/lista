@@ -142,7 +142,8 @@ router.get('/actividades-por-usuario/:id_usuario', async (req, res) => {
       } = data;
 
       let nombre_proyecto = null;
-
+      let categoria = null;
+      
       if (proyecto) {
         const proyectoDocRef = proyecto;
         const proyectoDocSnapshot = await getDoc(proyectoDocRef);
@@ -220,12 +221,12 @@ router.get('/proyectos-por-usuario/:id_usuario', async (req, res) => {
     proyectosQuerySnapshot.forEach(doc => {
       const id_proyecto = doc.id;
       const data = doc.data();
-      const { nombre_proyecto, categoria_proyecto, descripcion } = data;
+      const { nombre_proyecto, categoria, descripcion } = data;
 
       proyectosUsuario.push({
         id_proyecto,
         nombre_proyecto,
-        categoria_proyecto,
+        categoria,
         descripcion,
       });
     });
