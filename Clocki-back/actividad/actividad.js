@@ -50,7 +50,7 @@ router.post('/registro-actividad', async (req, res) => {
 
     // Guarda el registro de tiempo en Firestore
     await addDoc(registroTiempoRef, tiempoData);
-
+    console.log("actividad",actividadData);
     res.status(201).json({ actividadData });
   } catch (error) {
     console.error('Error al registrar actividad y tiempo:', error);
