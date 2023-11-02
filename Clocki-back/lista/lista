@@ -153,6 +153,7 @@ router.get('/actividades-por-usuario/:id_usuario', async (req, res) => {
 
         if (proyectoDocSnapshot.exists()) {
           nombre_proyecto = proyectoDocSnapshot.data().nombre_proyecto;
+          categoria = proyectoDocSnapshot.data().categoria
         }
       }
 
@@ -166,6 +167,7 @@ router.get('/actividades-por-usuario/:id_usuario', async (req, res) => {
         fecha_registro,
         hora_registro,
         nombre_proyecto,
+        categoria,
       });
     }
 
