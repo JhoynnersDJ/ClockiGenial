@@ -14,7 +14,7 @@ router.post('/registro-cliente', async (req, res) => {
       // Define los datos del cliente
       const clienteData = {
         nombre_cliente: nombre_cliente,
-        proyecto: proyectoRef = doc(db, 'proyecto', id_proyecto) // Referencia al proyecto
+        proyecto: proyectoRef = doc(db, 'proyectos', id_proyecto) // Referencia al proyecto
       };
   
       // Guarda el cliente en Firestore

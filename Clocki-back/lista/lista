@@ -32,7 +32,6 @@ router.post('/lista-actividad', async (req, res) => {
     res.status(500).json({ error: 'Ocurrió un error al obtener registros de tiempo' });
   }
 });
-
 //---------------------------------------------------------------------------------------
 // Ruta para obtener actividades de un usuario por su ID
 router.get('/actividades-por-usuario-ANTIGUO/:id_usuario', async (req, res) => {
@@ -111,9 +110,6 @@ const registrosTiempo = registrosTiempoQuerySnapshot.docs.map(doc => {
 //----------------------------------------------------------------------------------------------------
 
 
-
-
-
 // Ruta para obtener actividades de un usuario y registros de tiempo de esas actividades
 router.get('/actividades-por-usuario/:id_usuario', async (req, res) => {
   try {
@@ -168,6 +164,7 @@ router.get('/actividades-por-usuario/:id_usuario', async (req, res) => {
         hora_registro,
         nombre_proyecto,
         categoria,
+
       });
     }
 
@@ -204,5 +201,46 @@ router.get('/actividades-por-usuario/:id_usuario', async (req, res) => {
     res.status(500).json({ error: 'Ocurrió un error al obtener actividades y registros de tiempo' });
   }
 });
+
+// Ruta para obtener todos los proyectos de un usuario
+router.get('/proyectos-por-usuario/:id_usuario', async (req, res) => {
+  try {
+    const { id_usuario } = req.params; // Captura el id_usuario de la URL
+
+    const proyectosRef = collection(db, 'proyectos');
+    const proyectosQuerySnapshot = await getDocs(
+      query(
+        proyectosRef,
+        where('usuario', '==', doc(db, 'usuarios', id_usuario))
+      )
+    );
+
+    const proyectosUsuario = [];
+
+    proyectosQuerySnapshot.forEach(doc => {
+      const id_proyecto = doc.id;
+      const data = doc.data();
+      const { nombre_proyecto, categoria_proyecto, descripcion } = data;
+
+      proyectosUsuario.push({
+        id_proyecto,
+        nombre_proyecto,
+        categoria_proyecto,
+        descripcion,
+      });
+    });
+
+    res.status(200).json({
+      proyectosUsuario,
+    });
+  } catch (error) {
+    console.error('Error al obtener proyectos:', error);
+    res.status(500).json({ error: 'Ocurrió un error al obtener proyectos' });
+  }
+});
+
+
+
+
 module.exports = router;
 

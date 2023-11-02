@@ -9,7 +9,7 @@ router.post('/registro-proyecto', async (req, res) => {
       const { nombre_proyecto, id_cliente, id_usuario, descripcion, categoria } = req.body;
   
       // Verifica si la actividad existe antes de continuar
-      const usuarioRef = doc(db, 'usuario', id_usuario);
+      const usuarioRef = doc(db, 'usuarios', id_usuario);
 
       // Crea un nuevo documento en la colección "proyectos"
       const proyectosRef = collection(db, 'proyectos');
