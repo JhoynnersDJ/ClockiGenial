@@ -5,9 +5,9 @@ const { db } = require('../database/firebase');
 const router = express.Router();
 
 // Ruta para obtener todos los registros de tiempo de una actividad
-router.post('/lista-tiempo', async (req, res) => {
+router.get('/lista-tiempo/:id_actividad', async (req, res) => {
   try {
-    const { id_actividad } = req.body;
+    const { id_actividad } = req.params;
     console.log('Valor de id_actividad:', id_actividad);
 
     // Realiza una consulta para obtener todos los registros de tiempo relacionados con la actividad
@@ -19,9 +19,10 @@ router.post('/lista-tiempo', async (req, res) => {
     querySnapshot.forEach((doc) => {
       const data = doc.data();
       if (data.actividad.id === id_actividad) {
-        // Filtra los campos que deseas
+        // Filtra los campos que deseas y agrega el ID del documento
         const { nombre_actividad, duracion, fecha } = data;
-        registrosTiempo.push({ nombre_actividad, duracion, fecha });
+        const registroTiempoId = doc.id; // ID del documento
+        registrosTiempo.push({ id_registro: registroTiempoId, nombre_actividad, duracion, fecha });
       }
     });
 
