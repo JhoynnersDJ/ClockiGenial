@@ -16,15 +16,16 @@ router.get('/lista-tiempo/:id_actividad', async (req, res) => {
 
     const registrosTiempo = [];
 
-    querySnapshot.forEach((doc) => {
+    for (const doc of querySnapshot.docs) {
       const data = doc.data();
       if (data.actividad.id === id_actividad) {
         // Filtra los campos que deseas y agrega el ID del documento
-        const { nombre_actividad, duracion, fecha, costo_intervalo } = data;
+        const { nombre_actividad, duracion, fecha } = data;
+        const costo_intervalo = typeof data.costo_intervalo === 'number' ? data.costo_intervalo.toFixed(2) : null; // Limitar a dos decimales
         const registroTiempoId = doc.id; // ID del documento
         registrosTiempo.push({ id_registro: registroTiempoId, nombre_actividad, duracion, fecha, costo_intervalo });
       }
-    });
+    }
 
     console.log('Contenido de registrosTiempo:', registrosTiempo); // Agrega esta línea para imprimir en la consola
     res.status(200).json(registrosTiempo);
@@ -64,8 +65,11 @@ router.get('/actividades-por-usuario/:id_usuario', async (req, res) => {
         tarifa,
         fecha_registro,
         hora_registro,
-        total_tarifa, // Agrega el campo total_tarifa aquí
+        total_tarifa,
       } = data;
+
+      // Verifica si total_tarifa y costo_intervalo no son undefined antes de aplicar toFixed(2)
+      const total_tarifaDosDecimales = typeof total_tarifa === 'number' ? total_tarifa.toFixed(2) : null;
 
       let nombre_proyecto = null;
       let categoria = null;
@@ -90,7 +94,7 @@ router.get('/actividades-por-usuario/:id_usuario', async (req, res) => {
         hora_registro,
         nombre_proyecto,
         categoria,
-        total_tarifa, // Incluye el campo total_tarifa en la respuesta
+        total_tarifa: total_tarifaDosDecimales,
       });
     }
 
@@ -100,7 +104,6 @@ router.get('/actividades-por-usuario/:id_usuario', async (req, res) => {
     res.status(500).json({ error: 'Ocurrió un error al obtener actividades y registros de tiempo' });
   }
 });
-
 // Ruta para obtener todos los proyectos de un usuario
 router.get('/proyectos-por-usuario/:id_usuario', async (req, res) => {
   try {
