@@ -6,7 +6,7 @@ const {db} = require ('../database/firebase');
 // Ruta para registrar una actividad y su tiempo
 router.post('/registro-actividad', async (req, res) => {
   try {
-    const { nombre_actividad, id_proyecto, id_usuario, horas, minutos, segundos, tarifa } = req.body;
+    const { nombre_actividad, id_proyecto, id_usuario, horas, minutos, segundos, tarifa} = req.body;
 
     // Obtiene la fecha y hora actual
     const fechaHoraActual = new Date();
@@ -58,7 +58,7 @@ router.post('/registro-actividad', async (req, res) => {
   }
 });
 
-// Ruta para actualizar una actividad
+// Ruta para actualizar una actividad ACTUALIZADA
 router.post('/actualizar-actividad', async (req, res) => {
   try {
     const { id_actividad, horas, minutos, segundos } = req.body;
@@ -76,9 +76,24 @@ router.post('/actualizar-actividad', async (req, res) => {
     };
 
     // Guarda el registro de tiempo en Firestore
-    await addDoc(registroTiempoRef, tiempoData);
+    const registroTiempoDocRef = await addDoc(registroTiempoRef, tiempoData);
 
-    // Actualiza la duración total
+    // Obtiene la tarifa de la actividad
+    const actividadDoc = await getDoc(doc(db, 'actividades', id_actividad));
+    const tarifa = actividadDoc.data().tarifa;
+
+    // Calcula el costo_intervalo multiplicando la tarifa por la duración del registro de tiempo en horas
+    const tiempoDataSnapshot = await getDoc(registroTiempoDocRef);
+    const tiempoDuracion = tiempoDataSnapshot.data().duracion;
+    const tiempoHorasFloat = tiempoDuracion.horas + (tiempoDuracion.minutos / 60) + (tiempoDuracion.segundos / 3600);
+    const costo_intervalo = tarifa * tiempoHorasFloat;
+
+    // Actualiza el campo 'costo_intervalo' en el registro de tiempo
+    await updateDoc(registroTiempoDocRef, {
+      costo_intervalo: costo_intervalo,
+    });
+
+    // Calcula la duración total
     const registroTiempoQuery = query(registroTiempoRef, where('actividad', '==', doc(db, 'actividades', id_actividad)));
     const registroTiempoSnapshot = await getDocs(registroTiempoQuery);
 
@@ -106,6 +121,15 @@ router.post('/actualizar-actividad', async (req, res) => {
         minutos: totalMinutos,
         segundos: totalSegundos,
       },
+    });
+
+    // Calcula la total_tarifa multiplicando la tarifa por la duración total en horas
+    const totalHorasFloat = totalHoras + (totalMinutos / 60) + (totalSegundos / 3600);
+    const total_tarifa = tarifa * totalHorasFloat;
+
+    // Actualiza el campo 'total_tarifa' en la actividad
+    await updateDoc(doc(db, 'actividades', id_actividad), {
+      total_tarifa: total_tarifa,
     });
 
     res.status(201).json({ message: 'Registro de tiempo y duración actualizados con éxito' });

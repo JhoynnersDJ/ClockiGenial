@@ -20,8 +20,8 @@ router.post('/lista-tiempo', async (req, res) => {
       const data = doc.data();
       if (data.actividad.id === id_actividad) {
         // Filtra los campos que deseas
-        const { nombre_actividad, duracion, fecha } = data;
-        registrosTiempo.push({ nombre_actividad, duracion, fecha });
+        const { nombre_actividad, duracion, fecha, costo_intervalo } = data;
+        registrosTiempo.push({ nombre_actividad, duracion, fecha, costo_intervalo });
       }
     });
 
@@ -62,7 +62,8 @@ router.get('/actividades-por-usuario/:id_usuario', async (req, res) => {
         proyecto,
         tarifa,
         fecha_registro,
-        hora_registro
+        hora_registro,
+        total_tarifa, // Agrega el campo total_tarifa aquí
       } = data;
 
       let nombre_proyecto = null;
@@ -74,7 +75,7 @@ router.get('/actividades-por-usuario/:id_usuario', async (req, res) => {
 
         if (proyectoDocSnapshot.exists()) {
           nombre_proyecto = proyectoDocSnapshot.data().nombre_proyecto;
-          categoria = proyectoDocSnapshot.data().categoria
+          categoria = proyectoDocSnapshot.data().categoria;
         }
       }
 
@@ -88,11 +89,11 @@ router.get('/actividades-por-usuario/:id_usuario', async (req, res) => {
         hora_registro,
         nombre_proyecto,
         categoria,
-
+        total_tarifa, // Incluye el campo total_tarifa en la respuesta
       });
     }
 
-    res.status(200).json({actividadesUsuario});
+    res.status(200).json({ actividadesUsuario });
   } catch (error) {
     console.error('Error al obtener actividades y registros de tiempo:', error);
     res.status(500).json({ error: 'Ocurrió un error al obtener actividades y registros de tiempo' });
