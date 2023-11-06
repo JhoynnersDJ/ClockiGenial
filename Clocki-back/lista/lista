@@ -119,18 +119,30 @@ router.get('/proyectos-por-usuario/:id_usuario', async (req, res) => {
 
     const proyectosUsuario = [];
 
-    proyectosQuerySnapshot.forEach(doc => {
+    for (const doc of proyectosQuerySnapshot.docs) {
       const id_proyecto = doc.id;
       const data = doc.data();
-      const { nombre_proyecto, categoria, descripcion } = data;
+      const { nombre_proyecto, categoria, descripcion, cliente } = data;
+
+      let nombre_cliente = null;
+
+      if (cliente) {
+        const clienteDocRef = cliente;
+        const clienteDocSnapshot = await getDoc(clienteDocRef);
+
+        if (clienteDocSnapshot.exists()) {
+          nombre_cliente = clienteDocSnapshot.data().nombre_cliente;
+        }
+      }
 
       proyectosUsuario.push({
         id_proyecto,
         nombre_proyecto,
         categoria,
         descripcion,
+        nombre_cliente,
       });
-    });
+    }
 
     res.status(200).json({
       proyectosUsuario,
@@ -140,6 +152,7 @@ router.get('/proyectos-por-usuario/:id_usuario', async (req, res) => {
     res.status(500).json({ error: 'Ocurrió un error al obtener proyectos' });
   }
 });
+
 
 
 

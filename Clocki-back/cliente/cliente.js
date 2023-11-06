@@ -6,7 +6,7 @@ const {db} = require ('../database/firebase');
 // Ruta para registrar un cliente
 router.post('/registro-cliente', async (req, res) => {
     try {
-      const { nombre_cliente, id_proyecto } = req.body;
+      const { nombre_cliente} = req.body;
   
       // Crea un nuevo documento en la colección "clientes"
       const clientesRef = collection(db, 'clientes');
@@ -14,7 +14,6 @@ router.post('/registro-cliente', async (req, res) => {
       // Define los datos del cliente
       const clienteData = {
         nombre_cliente: nombre_cliente,
-        proyecto: proyectoRef = doc(db, 'proyectos', id_proyecto) // Referencia al proyecto
       };
   
       // Guarda el cliente en Firestore
