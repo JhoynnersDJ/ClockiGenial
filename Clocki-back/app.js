@@ -11,6 +11,8 @@ const clienteRouter = require('./cliente/cliente');
 const listaRouter = require('./lista/lista');
 const { collection, getDocs, where, doc, getDoc, onSnapshot, query } = require('firebase/firestore');
 const { db } = require('./database/firebase');
+const { getMonitor } = require('consulta-dolar-venezuela');
+
 
 const app = express();
 const port = 7000;
@@ -20,6 +22,17 @@ const io = new Server(server);
 app.use(cors());
 app.use(bodyParser.json());
 
+app.get('/dolar-bcv', async (req, res) => {
+  try {
+    const respuesta = await getMonitor('BCV', 'price', false); // Obtener el valor del BCV
+    const precioBCV = respuesta.bcv.price; // Acceder al precio del BCV
+
+    res.json({ precioBCV }); // Enviar el precio del BCV en la respuesta JSON
+  } catch (error) {
+    console.error('Error al obtener el valor del dólar en BCV:', error);
+    res.status(500).json({ error: 'Ocurrió un error al obtener el valor del dólar' });
+  }
+});
 // Middleware para usuarios
 app.use('/usuarios', UsuariosRouter);
 

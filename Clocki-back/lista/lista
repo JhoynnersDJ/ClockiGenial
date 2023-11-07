@@ -36,10 +36,9 @@ router.get('/lista-tiempo/:id_actividad', async (req, res) => {
 });
 //---------------------------------------------------------------------------------------
 
-// Ruta para obtener actividades de un usuario y registros de tiempo de esas actividades
 router.get('/actividades-por-usuario/:id_usuario', async (req, res) => {
   try {
-    const { id_usuario } = req.params; // Captura el id_usuario de la URL
+    const { id_usuario } = req.params;
 
     const actividadesRef = collection(db, 'actividades');
     const actividadesQuerySnapshot = await getDocs(
@@ -50,12 +49,8 @@ router.get('/actividades-por-usuario/:id_usuario', async (req, res) => {
     );
 
     const actividadesUsuario = [];
-    const actividadRefs = [];
 
     for (const doc of actividadesQuerySnapshot.docs) {
-      const id_actividad = doc.id;
-      actividadRefs.push(doc.ref);
-
       const data = doc.data();
       const {
         nombre_actividad,
@@ -73,7 +68,8 @@ router.get('/actividades-por-usuario/:id_usuario', async (req, res) => {
 
       let nombre_proyecto = null;
       let categoria = null;
-      
+      let nombre_cliente = null;
+
       if (proyecto) {
         const proyectoDocRef = proyecto;
         const proyectoDocSnapshot = await getDoc(proyectoDocRef);
@@ -81,11 +77,18 @@ router.get('/actividades-por-usuario/:id_usuario', async (req, res) => {
         if (proyectoDocSnapshot.exists()) {
           nombre_proyecto = proyectoDocSnapshot.data().nombre_proyecto;
           categoria = proyectoDocSnapshot.data().categoria;
+
+          const clienteRef = proyectoDocSnapshot.data().cliente;
+          if (clienteRef) {
+            const clienteDocSnapshot = await getDoc(clienteRef);
+            if (clienteDocSnapshot.exists()) {
+              nombre_cliente = clienteDocSnapshot.data().nombre_cliente;
+            }
+          }
         }
       }
 
       actividadesUsuario.push({
-        id_actividad,
         nombre_actividad,
         completado,
         duracion_total,
@@ -95,6 +98,7 @@ router.get('/actividades-por-usuario/:id_usuario', async (req, res) => {
         nombre_proyecto,
         categoria,
         total_tarifa: total_tarifaDosDecimales,
+        nombre_cliente,
       });
     }
 
