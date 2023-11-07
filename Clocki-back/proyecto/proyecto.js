@@ -8,6 +8,10 @@ router.post('/registro-proyecto', async (req, res) => {
     try {
       const { nombre_proyecto, id_cliente, id_usuario, descripcion, categoria } = req.body;
   
+      // Obtiene la fecha y hora actual
+    const fechaHoraActual = new Date();
+    const fechaActual = fechaHoraActual.toLocaleDateString('es-ES');
+    const horaActual = fechaHoraActual.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
       // Verifica si la actividad existe antes de continuar
       const usuarioRef = doc(db, 'usuarios', id_usuario);
 
@@ -21,6 +25,8 @@ router.post('/registro-proyecto', async (req, res) => {
         usuario: usuarioRef, // Referencia al usuario (obligatorio)
         descripcion: descripcion,
         categoria: categoria,
+        fecha_proyecto: fechaActual,
+        hora_proyecto: horaActual,
       };
   
       // Guarda el proyecto en Firestore
