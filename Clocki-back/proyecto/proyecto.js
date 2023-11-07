@@ -26,7 +26,7 @@ router.post('/registro-proyecto', async (req, res) => {
       // Guarda el proyecto en Firestore
       const nuevoProyectoRef = await addDoc(proyectosRef, proyectoData);
   
-      res.status(201).json({ message: 'Proyecto registrado con éxito', proyectoId: nuevoProyectoRef.id });
+      res.status(201).json({ message: 'Proyecto registrado con éxito'});
     } catch (error) {
       console.error('Error al registrar proyecto:', error);
       res.status(500).json({ error: 'Ocurrió un error al registrar proyecto' });
