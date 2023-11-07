@@ -57,6 +57,7 @@ router.get('/actividades-por-usuario/:id_usuario', async (req, res) => {
     const actividadesUsuario = [];
 
     for (const doc of actividadesQuerySnapshot.docs) {
+      const id_actividad = doc.id;
       const data = doc.data();
       const {
         nombre_actividad,
@@ -100,6 +101,7 @@ router.get('/actividades-por-usuario/:id_usuario', async (req, res) => {
       const total_tarifaDosDecimales_bs = typeof total_tarifa_bs === 'number' ? total_tarifa_bs.toFixed(2) : null;
 
       actividadesUsuario.push({
+        id_actividad,
         nombre_actividad,
         completado,
         duracion_total,
