@@ -1,8 +1,11 @@
 const express = require('express');
 const { collection, query, getDocs, where, orderBy, limit, doc, getDoc} = require('firebase/firestore');
 const { db } = require('../database/firebase');
+const { obtenerPrecioBCV } = require('../bcv');
 
 const router = express.Router();
+
+
 
 // Ruta para obtener todos los registros de tiempo de una actividad
 router.get('/lista-tiempo/:id_actividad', async (req, res) => {
@@ -40,6 +43,9 @@ router.get('/actividades-por-usuario/:id_usuario', async (req, res) => {
   try {
     const { id_usuario } = req.params;
 
+    // Obtén el precio del dólar en Bolívares (BS)
+    const precioBCV = await obtenerPrecioBCV();
+
     const actividadesRef = collection(db, 'actividades');
     const actividadesQuerySnapshot = await getDocs(
       query(
@@ -70,7 +76,7 @@ router.get('/actividades-por-usuario/:id_usuario', async (req, res) => {
       let nombre_proyecto = null;
       let categoria = null;
       let nombre_cliente = null;
-
+      let total_tarifa_bs = null; // Agregamos el campo total_tarifa_bs
       if (proyecto) {
         const proyectoDocRef = proyecto;
         const proyectoDocSnapshot = await getDoc(proyectoDocRef);
@@ -84,10 +90,15 @@ router.get('/actividades-por-usuario/:id_usuario', async (req, res) => {
             const clienteDocSnapshot = await getDoc(clienteRef);
             if (clienteDocSnapshot.exists()) {
               nombre_cliente = clienteDocSnapshot.data().nombre_cliente;
+
+            // Calcula total_tarifa_bs multiplicando total_tarifa por el precio del BCV
+            total_tarifa_bs = total_tarifa * precioBCV;
+
             }
           }
         }
       }
+      const total_tarifaDosDecimales_bs = typeof total_tarifa_bs === 'number' ? total_tarifa_bs.toFixed(2) : null;
 
       actividadesUsuario.push({
         id_actividad,
@@ -101,6 +112,7 @@ router.get('/actividades-por-usuario/:id_usuario', async (req, res) => {
         categoria,
         total_tarifa: total_tarifaDosDecimales,
         nombre_cliente,
+        total_tarifa_bs: total_tarifaDosDecimales_bs
       });
     }
 
