@@ -155,6 +155,41 @@ router.get('/proyectos-por-usuario/:id_usuario', async (req, res) => {
 
 
 
+// Ruta para obtener todos los clientes de un usuario
+router.get('/clientes-por-usuario/:id_usuario', async (req, res) => {
+  try {
+    const { id_usuario } = req.params; // Captura el id_usuario de la URL
+
+    // Realiza una consulta para obtener todos los clientes relacionados con el usuario
+    const clientesRef = collection(db, 'clientes');
+    const clientesQuerySnapshot = await getDocs(
+      query(
+        clientesRef,
+        where('usuario', '==', doc(db, 'usuarios', id_usuario))
+      )
+    );
+
+    const clientesUsuario = [];
+
+    clientesQuerySnapshot.forEach(doc => {
+      const id_cliente = doc.id;
+      const data = doc.data();
+      const { nombre_cliente } = data;
+
+      clientesUsuario.push({
+        id_cliente,
+        nombre_cliente,
+      });
+    });
+
+    res.status(200).json({
+      clientesUsuario,
+    });
+  } catch (error) {
+    console.error('Error al obtener clientes:', error);
+    res.status(500).json({ error: 'Ocurrió un error al obtener clientes' });
+  }
+})
 
 
 module.exports = router;
