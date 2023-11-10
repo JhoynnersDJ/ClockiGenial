@@ -1,44 +1,23 @@
 const mongoose = require('mongoose');
 
-const actividadSchema = new mongoose.Schema({
-  nombre_actividad: {
-    type: String,
-    required: true
-  },
-  completado: {
-    type: Boolean,
-    default: false
-  },
+// Modelo para la colección "Actividades"
+const ActividadSchema = new mongoose.Schema({
+  nombre_actividad: String,
+  proyecto: { type: mongoose.Schema.Types.ObjectId, ref: 'Proyecto' },
+  usuario: { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario' },
   duracion_total: {
-    type: Number,
-    required: true
+    horas: Number,
+    minutos: Number,
+    segundos: Number,
   },
-  proyecto: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Proyecto'
-  },
-  tarifa: {
-    type: Number,
-    required: true
-  },
-  fecha_registro: {
-    type: Date,
-    default: Date.now
-  },
-  hora_registro: {
-    type: String,
-    required: true
-  },
-  total_tarifa: {
-    type: Number,
-    required: true
-  },
-  usuario: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Usuario'
-  }
+  tarifa: Number,
+  completado: Boolean,
+  fecha_registro: String,
+  hora_registro: String,
+  costo_intervalo: Number,
+  total_tarifa: Number,
 });
 
-const Actividad = mongoose.model('Actividad', actividadSchema);
+const Actividad = mongoose.model('Actividad', ActividadSchema);
 
 module.exports = Actividad;

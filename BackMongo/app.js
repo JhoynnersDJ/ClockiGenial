@@ -1,9 +1,12 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const loginRouter = require('./login/login');
-const listaRouter = require('./lista/lista');
+const LoginRouter = require('./login/login');
+const ListaRouter = require('./lista/lista');
 const UsuariosRouter = require('./usuarios/usuarios');
+const ActividadRouter = require('./actividad/actividad');
+const ProyectoRouter = require('./proyecto/proyecto');
+const ClienteRouter = require('./cliente/cliente');
 
 const mongoose = require('mongoose');
 
@@ -29,9 +32,18 @@ app.use(bodyParser.json());
 // Middleware para usuarios
 app.use('/usuarios', UsuariosRouter);
 // Middleware para Login
-app.use('/login', loginRouter);
+app.use('/login', LoginRouter);
 // Middleware para lista
-app.use('/lista', listaRouter);
+app.use('/lista', ListaRouter);
+// Middleware para actividad
+app.use('/actividad', ActividadRouter);
+// Middleware para proyectos
+app.use('/proyecto', ProyectoRouter);
+// Middleware para clientes
+app.use('/cliente', ClienteRouter);
+
+
+
 
 app.listen(port, () => {
   console.log(`La aplicación está corriendo en http://localhost:${port}`);

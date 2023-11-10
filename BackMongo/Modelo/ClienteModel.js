@@ -1,13 +1,10 @@
 const mongoose = require('mongoose');
 
-const clienteSchema = new mongoose.Schema({
-  nombre_cliente: {
-    type: String,
-    required: true
-  },
-  // Otros campos del cliente
+const ClienteSchema = new mongoose.Schema({
+  nombre_cliente: String,
+  usuario: { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario', required: true },
 });
 
-const Cliente = mongoose.model('Cliente', clienteSchema);
+const Cliente = mongoose.model('Cliente', ClienteSchema);
 
 module.exports = Cliente;
