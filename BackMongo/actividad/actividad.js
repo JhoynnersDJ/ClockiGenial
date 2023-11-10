@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const Actividad = require('../Modelo/ActividadModel');
 const RegistroTiempo = require('../Modelo/RegistroTiempoModel');
+const mongoose = require('mongoose');
+
 
 router.post('/registro-actividad', async (req, res) => {
   try {
@@ -11,17 +13,32 @@ router.post('/registro-actividad', async (req, res) => {
     const fechaActual = fechaHoraActual.toLocaleDateString('es-ES');
     const horaActual = fechaHoraActual.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
+    // Verifica si id_usuario es un ObjectId válido
+    if (!mongoose.isValidObjectId(id_usuario)) {
+      return res.status(400).json({ error: 'ID de usuario no válido' });
+    }
+
     // 1. Crea un nuevo documento en la colección de Actividades
-    const nuevaActividad = new Actividad({
+    const nuevaActividadData = {
       nombre_actividad,
-      proyecto: id_proyecto, // Asumiendo que id_proyecto es un ObjectId válido
-      usuario: id_usuario, // Asumiendo que id_usuario es un ObjectId válido
+      usuario: id_usuario,
       duracion_total: { horas, minutos, segundos },
       tarifa: tarifa !== undefined ? tarifa : null,
       completado: false,
       fecha_registro: fechaActual,
       hora_registro: horaActual,
-    });
+    };
+
+    // Añade el campo proyecto solo si se proporciona
+    if (id_proyecto) {
+      // Verifica si id_proyecto es un ObjectId válido
+      if (!mongoose.isValidObjectId(id_proyecto)) {
+        return res.status(400).json({ error: 'ID de proyecto no válido' });
+      }
+      nuevaActividadData.proyecto = id_proyecto;
+    }
+
+    const nuevaActividad = new Actividad(nuevaActividadData);
 
     // Guarda la actividad en MongoDB
     const actividadGuardada = await nuevaActividad.save();
