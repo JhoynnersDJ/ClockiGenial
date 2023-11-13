@@ -133,4 +133,34 @@ router.post('/actualizar-actividad', async (req, res) => {
       res.status(500).json({ error: 'Ocurrió un error al actualizar actividad y tiempo' });
     }
   });
+
+
+
+  // Endpoint para marcar una actividad como completada
+router.post('/actividad-completada', async (req, res) => {
+  try {
+    const { id_actividad, id_usuario } = req.body;
+
+    // Busca la actividad por su ID y el ID del usuario
+    const actividad = await Actividad.findOne({ _id: id_actividad, usuario: id_usuario });
+
+    if (actividad) {
+      // Actualiza el campo 'completado' a true
+      actividad.completado = true;
+
+      // Guarda los cambios
+      await actividad.save();
+
+      res.status(200).json({ message: 'Actividad marcada como completada correctamente' });
+    } else {
+      res.status(404).json({ error: 'Actividad no encontrada para el usuario proporcionado' });
+    }
+  } catch (error) {
+    console.error('Error al marcar la actividad como completada:', error);
+    res.status(500).json({ error: 'Ocurrió un error al marcar la actividad como completada' });
+  }
+});
+
+
+
 module.exports = router;

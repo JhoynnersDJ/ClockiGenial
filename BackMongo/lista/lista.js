@@ -15,7 +15,7 @@ router.get('/lista-tiempo/:id_actividad', async (req, res) => {
     // Busca los registros de tiempo relacionados con la actividad por su ID
     const registrosTiempo = await RegistroTiempo.find({ actividad: id_actividad });
 
-    
+
     const registrosTiempoResponse = registrosTiempo.map((registro) => ({
       id_registro: registro._id,
       nombre_actividad: registro.actividad.nombre_actividad,
@@ -31,15 +31,17 @@ router.get('/lista-tiempo/:id_actividad', async (req, res) => {
   }
 });
 
-//Endpoint que lista los clientes de dicho usuario
-router.get('/actividades-por-usuario/:id_usuario', async (req, res) => {
+
+// Endpoint que lista las actividades no completadas del usuario
+router.get('/actividades-por-usuario-completado/:id_usuario', async (req, res) => {
   try {
     const { id_usuario } = req.params;
 
     // Obtén el precio del dólar en Bolívares (BS)
     const precioBCV = await obtenerPrecioBCV();
 
-    const actividadesUsuario = await Actividad.find({ usuario: id_usuario });
+    // Busca las actividades no completadas del usuario por su ID
+    const actividadesUsuario = await Actividad.find({ usuario: id_usuario, completado: true });
 
     const actividades = [];
 
@@ -47,10 +49,10 @@ router.get('/actividades-por-usuario/:id_usuario', async (req, res) => {
       const {
         _id: id_actividad,
         nombre_actividad,
-        completado,
         duracion_total,
         proyecto,
         tarifa,
+        completado,
         fecha_registro,
         hora_registro,
         total_tarifa,
@@ -86,23 +88,103 @@ router.get('/actividades-por-usuario/:id_usuario', async (req, res) => {
       actividades.push({
         id_actividad,
         nombre_actividad,
-        completado,
         duracion_total,
         tarifa,
         fecha_registro,
         hora_registro,
         nombre_proyecto,
         categoria,
+        completado,
         total_tarifa: total_tarifaDosDecimales,
         nombre_cliente,
         total_tarifa_bs: total_tarifaDosDecimales_bs
       });
     }
 
-    res.status(200).json({ actividadesUsuario: actividades });
+    res.status(200).json({ actividadesCompletadas: actividades });
   } catch (error) {
-    console.error('Error al obtener actividades y registros de tiempo:', error);
-    res.status(500).json({ error: 'Ocurrió un error al obtener actividades y registros de tiempo' });
+    console.error('Error al obtener actividades no completadas:', error);
+    res.status(500).json({ error: 'Ocurrió un error al obtener actividades no completadas' });
+  }
+});
+
+
+
+
+
+// Endpoint que lista las actividades no completadas del usuario
+router.get('/actividades-por-usuario-no-completado/:id_usuario', async (req, res) => {
+  try {
+    const { id_usuario } = req.params;
+
+    // Obtén el precio del dólar en Bolívares (BS)
+    const precioBCV = await obtenerPrecioBCV();
+
+    // Busca las actividades no completadas del usuario por su ID
+    const actividadesUsuario = await Actividad.find({ usuario: id_usuario, completado: false });
+
+    const actividades = [];
+
+    for (const actividad of actividadesUsuario) {
+      const {
+        _id: id_actividad,
+        nombre_actividad,
+        duracion_total,
+        proyecto,
+        tarifa,
+        completado,
+        fecha_registro,
+        hora_registro,
+        total_tarifa,
+      } = actividad;
+
+      // Verifica si total_tarifa y costo_intervalo no son undefined antes de aplicar toFixed(2)
+      const total_tarifaDosDecimales = typeof total_tarifa === 'number' ? total_tarifa.toFixed(2) : null;
+
+      let nombre_proyecto = null;
+      let categoria = null;
+      let nombre_cliente = null;
+      let total_tarifa_bs = null; // Agregamos el campo total_tarifa_bs
+      if (proyecto) {
+        const proyectoDoc = await Proyecto.findById(proyecto);
+
+        if (proyectoDoc) {
+          nombre_proyecto = proyectoDoc.nombre_proyecto;
+          categoria = proyectoDoc.categoria;
+
+          if (proyectoDoc.cliente) {
+            const clienteDoc = await Cliente.findById(proyectoDoc.cliente);
+            if (clienteDoc) {
+              nombre_cliente = clienteDoc.nombre_cliente;
+
+              // Calcula total_tarifa_bs multiplicando total_tarifa por el precio del BCV
+              total_tarifa_bs = total_tarifa * precioBCV;
+            }
+          }
+        }
+      }
+      const total_tarifaDosDecimales_bs = typeof total_tarifa_bs === 'number' ? total_tarifa_bs.toFixed(2) : null;
+
+      actividades.push({
+        id_actividad,
+        nombre_actividad,
+        duracion_total,
+        tarifa,
+        fecha_registro,
+        hora_registro,
+        nombre_proyecto,
+        categoria,
+        completado,
+        total_tarifa: total_tarifaDosDecimales,
+        nombre_cliente,
+        total_tarifa_bs: total_tarifaDosDecimales_bs
+      });
+    }
+
+    res.status(200).json({ actividadesNoCompletadas: actividades });
+  } catch (error) {
+    console.error('Error al obtener actividades no completadas:', error);
+    res.status(500).json({ error: 'Ocurrió un error al obtener actividades no completadas' });
   }
 });
 
