@@ -15,6 +15,7 @@ router.get('/lista-tiempo/:id_actividad', async (req, res) => {
     // Busca los registros de tiempo relacionados con la actividad por su ID
     const registrosTiempo = await RegistroTiempo.find({ actividad: id_actividad });
 
+    
     const registrosTiempoResponse = registrosTiempo.map((registro) => ({
       id_registro: registro._id,
       nombre_actividad: registro.actividad.nombre_actividad,

@@ -12,6 +12,7 @@ const RegistroTiempoSchema = new mongoose.Schema({
     costo_intervalo: Number,
   });
   
+  
   const RegistroTiempo = mongoose.model('RegistroTiempo', RegistroTiempoSchema);
   
   module.exports = RegistroTiempo;
