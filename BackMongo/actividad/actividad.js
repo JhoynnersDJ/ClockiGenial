@@ -139,10 +139,10 @@ router.post('/actualizar-actividad', async (req, res) => {
   // Endpoint para marcar una actividad como completada
 router.post('/actividad-completada', async (req, res) => {
   try {
-    const { id_actividad, id_usuario } = req.body;
+    const { id_actividad } = req.body;
 
     // Busca la actividad por su ID y el ID del usuario
-    const actividad = await Actividad.findOne({ _id: id_actividad, usuario: id_usuario });
+    const actividad = await Actividad.findOne({ _id: id_actividad });
 
     if (actividad) {
       // Actualiza el campo 'completado' a true
