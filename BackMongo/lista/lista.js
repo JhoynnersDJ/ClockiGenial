@@ -276,6 +276,7 @@ router.get('/actividades-por-proyecto/:id_proyecto', async (req, res) => {
         fecha_registro,
         hora_registro,
         total_tarifa,
+        completado, // Agrega el campo "disponible" directamente desde la actividad
       } = actividad;
 
       // Verifica si total_tarifa no es undefined antes de aplicar toFixed(2)
@@ -288,7 +289,8 @@ router.get('/actividades-por-proyecto/:id_proyecto', async (req, res) => {
         tarifa,
         fecha_registro,
         hora_registro,
-        total_tarifa: total_tarifaDosDecimales
+        total_tarifa: total_tarifaDosDecimales,
+        completado,
       });
     }
 
@@ -298,6 +300,7 @@ router.get('/actividades-por-proyecto/:id_proyecto', async (req, res) => {
     res.status(500).json({ error: 'Ocurrió un error al obtener actividades por proyecto' });
   }
 });
+
 
 module.exports = router;
 
