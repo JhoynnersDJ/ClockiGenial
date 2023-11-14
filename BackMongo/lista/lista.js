@@ -275,6 +275,7 @@ router.get('/actividades-por-proyecto/:id_proyecto', async (req, res) => {
         tarifa,
         fecha_registro,
         hora_registro,
+        total_tarifa,
       } = actividad;
 
       actividadesResponse.push({
@@ -284,7 +285,7 @@ router.get('/actividades-por-proyecto/:id_proyecto', async (req, res) => {
         tarifa,
         fecha_registro,
         hora_registro,
-        // Otros campos que desees incluir
+        total_tarifa,
       });
     }
 
