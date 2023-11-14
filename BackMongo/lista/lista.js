@@ -278,6 +278,9 @@ router.get('/actividades-por-proyecto/:id_proyecto', async (req, res) => {
         total_tarifa,
       } = actividad;
 
+      // Verifica si total_tarifa no es undefined antes de aplicar toFixed(2)
+      const total_tarifaDosDecimales = typeof total_tarifa === 'number' ? total_tarifa.toFixed(2) : null;
+
       actividadesResponse.push({
         id_actividad: _id,
         nombre_actividad,
@@ -285,7 +288,7 @@ router.get('/actividades-por-proyecto/:id_proyecto', async (req, res) => {
         tarifa,
         fecha_registro,
         hora_registro,
-        total_tarifa,
+        total_tarifa: total_tarifaDosDecimales
       });
     }
 
