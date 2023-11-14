@@ -254,5 +254,46 @@ router.get('/clientes-por-usuario/:id_usuario', async (req, res) => {
   }
 });
 
+
+
+
+// Endpoint para obtener actividades por proyecto
+router.get('/actividades-por-proyecto/:id_proyecto', async (req, res) => {
+  try {
+    const { id_proyecto } = req.params;
+
+    // Busca las actividades del proyecto por su ID
+    const actividadesPorProyecto = await Actividad.find({ proyecto: id_proyecto });
+
+    const actividadesResponse = [];
+
+    for (const actividad of actividadesPorProyecto) {
+      const {
+        _id,
+        nombre_actividad,
+        duracion_total,
+        tarifa,
+        fecha_registro,
+        hora_registro,
+      } = actividad;
+
+      actividadesResponse.push({
+        id_actividad: _id,
+        nombre_actividad,
+        duracion_total,
+        tarifa,
+        fecha_registro,
+        hora_registro,
+        // Otros campos que desees incluir
+      });
+    }
+
+    res.status(200).json({ actividadesPorProyecto: actividadesResponse });
+  } catch (error) {
+    console.error('Error al obtener actividades por proyecto:', error);
+    res.status(500).json({ error: 'Ocurrió un error al obtener actividades por proyecto' });
+  }
+});
+
 module.exports = router;
 

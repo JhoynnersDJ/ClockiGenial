@@ -7,6 +7,7 @@ const UsuariosRouter = require('./usuarios/usuarios');
 const ActividadRouter = require('./actividad/actividad');
 const ProyectoRouter = require('./proyecto/proyecto');
 const ClienteRouter = require('./cliente/cliente');
+const ReporteRouter = require('./reportes/reportes')
 
 const mongoose = require('mongoose');
 
@@ -41,7 +42,8 @@ app.use('/actividad', ActividadRouter);
 app.use('/proyecto', ProyectoRouter);
 // Middleware para clientes
 app.use('/cliente', ClienteRouter);
-
+// Middleware para reportes
+app.use('/reporte', ReporteRouter);
 
 
 

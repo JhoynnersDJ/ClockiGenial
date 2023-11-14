@@ -10,7 +10,7 @@ router.post('/registro-actividad', async (req, res) => {
     const { nombre_actividad, id_proyecto, id_usuario, horas, minutos, segundos, tarifa } = req.body;
 
     const fechaHoraActual = new Date();
-    const fechaActual = fechaHoraActual.toLocaleDateString('es-ES');
+    const fechaActualISO = fechaHoraActual.toISOString().split('T')[0];  // Formato YYYY-MM-DD
     const horaActual = fechaHoraActual.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
     // Verifica si id_usuario es un ObjectId válido
@@ -25,7 +25,7 @@ router.post('/registro-actividad', async (req, res) => {
       duracion_total: { horas, minutos, segundos },
       tarifa: tarifa !== undefined ? tarifa : null,
       completado: false,
-      fecha_registro: fechaActual,
+      fecha_registro: fechaActualISO,
       hora_registro: horaActual,
     };
 
@@ -47,7 +47,7 @@ router.post('/registro-actividad', async (req, res) => {
     const nuevoRegistroTiempo = new RegistroTiempo({
       actividad: actividadGuardada._id,
       duracion: { horas, minutos, segundos },
-      fecha: fechaActual,
+      fecha: fechaActualISO,
       hora: horaActual,
       nombre_actividad,
     });
