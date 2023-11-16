@@ -8,6 +8,7 @@ const ProyectoSchema = new mongoose.Schema({
   categoria: Number,
   fecha_proyecto: String,
   hora_proyecto: String,
+  completado: { type: Boolean, default: false },
 });
 
 const Proyecto = mongoose.model('Proyecto', ProyectoSchema);

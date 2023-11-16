@@ -3,7 +3,7 @@ const router = express.Router();
 const Actividad = require('../Modelo/ActividadModel');
 const RegistroTiempo = require('../Modelo/RegistroTiempoModel');
 const mongoose = require('mongoose');
-
+const { obtenerPrecioBCV } = require('../bcv');
 
 router.post('/registro-actividad', async (req, res) => {
   try {
@@ -164,3 +164,9 @@ router.post('/actividad-completada', async (req, res) => {
 
 
 module.exports = router;
+
+
+
+
+
+

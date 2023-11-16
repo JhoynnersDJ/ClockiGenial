@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Proyecto = require('../Modelo/ProyectoModel');
 const Usuario = require('../Modelo/UsuarioModel');
-
+const mongoose = require('mongoose');
     
 router.post('/registro-proyecto', async (req, res) => {
   try {
@@ -10,7 +10,7 @@ router.post('/registro-proyecto', async (req, res) => {
 
     // Obtiene la fecha y hora actual
     const fechaHoraActual = new Date();
-    const fechaActual = fechaHoraActual.toLocaleDateString('es-ES');
+    const fechaActualISO = fechaHoraActual.toISOString().split('T')[0];  // Formato YYYY-MM-DD
     const horaActual = fechaHoraActual.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
     // Verifica si el usuario existe antes de continuar
@@ -25,8 +25,9 @@ router.post('/registro-proyecto', async (req, res) => {
       usuario: id_usuario, // Asumiendo que id_usuario es un ObjectId válido
       descripcion,
       categoria,
-      fecha_proyecto: fechaActual,
+      fecha_proyecto: fechaActualISO,
       hora_proyecto: horaActual,
+      completado: false,
     };
 
     // Añade el campo cliente solo si se proporciona
@@ -49,5 +50,31 @@ router.post('/registro-proyecto', async (req, res) => {
     res.status(500).json({ error: 'Ocurrió un error al registrar proyecto' });
   }
 });
+
+ // Endpoint para marcar una actividad como completada
+ router.post('/proyecto-completado', async (req, res) => {
+  try {
+    const { id_proyecto } = req.body;
+
+    // Busca la actividad por su ID y el ID del usuario
+    const proyecto = await Proyecto.findOne({ _id: id_proyecto });
+
+    if (proyecto) {
+      // Actualiza el campo 'completado' a true
+      proyecto.completado = true;
+
+      // Guarda los cambios
+      await proyecto.save();
+
+      res.status(200).json({ message: 'Proyecto marcado como completada correctamente' });
+    } else {
+      res.status(404).json({ error: 'Proyecto no encontrada para el usuario proporcionado' });
+    }
+  } catch (error) {
+    console.error('Error al marcar el proyecto como completada:', error);
+    res.status(500).json({ error: 'Ocurrió un error al marcar el proyecto como completada' });
+  }
+});
+
 
 module.exports = router;

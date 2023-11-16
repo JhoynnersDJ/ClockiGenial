@@ -5,7 +5,7 @@ const Usuario = require('../Modelo/UsuarioModel');
 
 router.post('/registro-cliente', async (req, res) => {
   try {
-    const { nombre_cliente, id_usuario } = req.body;
+    const { nombre_cliente, id_usuario, descripcion } = req.body;
 
     // Verifica si el usuario existe antes de continuar
     const usuario = await Usuario.findById(id_usuario);
@@ -17,6 +17,7 @@ router.post('/registro-cliente', async (req, res) => {
     const nuevoCliente = new Cliente({
       nombre_cliente,
       usuario: id_usuario, // Asumiendo que id_usuario es un ObjectId válido
+      descripcion,
     });
 
     // Guarda el cliente en MongoDB

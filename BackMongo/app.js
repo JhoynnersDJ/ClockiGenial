@@ -43,7 +43,7 @@ app.use('/proyecto', ProyectoRouter);
 // Middleware para clientes
 app.use('/cliente', ClienteRouter);
 // Middleware para reportes
-app.use('/reporte', ReporteRouter);
+app.use('/reportes', ReporteRouter);
 
 
 
