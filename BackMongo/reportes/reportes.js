@@ -24,35 +24,31 @@ router.get('/informe-diario/:fecha', async (req, res) => {
   }
 });
 
-router.get('/reporte-semanal/:fechaInicio/:id_usuario', async (req, res) => {
+// Endpoint para obtener informe semanal
+router.get('/informe-semanal/:fecha_inicio', async (req, res) => {
   try {
-    const { fechaInicio, id_usuario } = req.params;
+    // Convertir la cadena de fecha de inicio a un objeto Date
+    const fechaInicio = new Date(req.params.fecha_inicio);
 
-    // Parsea la fecha de inicio proporcionada por el cliente
-    const fechaInicioCliente = parseISO(fechaInicio);
+    // Calcula las fechas de inicio y fin de la semana que contiene la fecha de inicio
+    const primerDiaSemana = new Date(fechaInicio);
+    primerDiaSemana.setDate(fechaInicio.getDate() - fechaInicio.getDay() + (fechaInicio.getDay() === 0 ? -6 : 1));
+    const ultimoDiaSemana = new Date(fechaInicio);
+    ultimoDiaSemana.setDate(primerDiaSemana.getDate() + 6);
 
-    // Obtén la fecha de fin de la semana basada en la fecha proporcionada por el cliente
-    const fechaFinSemana = endOfWeek(fechaInicioCliente, { weekStartsOn: 1 });
-
-    // Formatea las fechas según tu formato preferido (por ejemplo, 'AA-MM-DD')
-    const fechaInicioFormateada = format(fechaInicioCliente, 'yyyy-MM-dd');
-    const fechaFinFormateada = format(fechaFinSemana, 'yyyy-MM-dd');
-    console.log('Fecha de inicio formateada:', fechaInicioFormateada);
-    console.log('Fecha de fin formateada:', fechaFinFormateada);
-    // Consultar actividades dentro del intervalo de la semana
+    // Realiza una consulta para obtener las actividades en el rango de fechas
     const actividadesSemana = await Actividad.find({
-      usuario: id_usuario,
       fecha_registro: {
-        $gte: new Date(fechaInicioFormateada),
-        $lte: new Date(fechaFinFormateada),
+        $gte: primerDiaSemana.toISOString().split('T')[0], // Convertir a formato YYYY-MM-DD
+        $lte: ultimoDiaSemana.toISOString().split('T')[0],
       },
     });
 
-    // En el lugar donde procesas y presentas la información:
+    // Procesa y presenta la información como desees
     const informeSemanal = {
       rango_fechas: {
-        inicio: fechaInicioFormateada,
-        fin: fechaFinFormateada,
+        inicio: primerDiaSemana.toISOString().split('T')[0],
+        fin: ultimoDiaSemana.toISOString().split('T')[0],
       },
       actividades: actividadesSemana.map(actividad => ({
         id_actividad: actividad._id,
@@ -61,11 +57,10 @@ router.get('/reporte-semanal/:fechaInicio/:id_usuario', async (req, res) => {
         // Otros campos que desees incluir
       })),
     };
-    console.log('Actividades encontradas:', actividadesSemana);
-    // Puedes enviar informeSemanal como respuesta a tu cliente
+
     res.status(200).json(informeSemanal);
   } catch (error) {
-    console.error('Error al obtener el informe semanal:', error);
+    console.error('Error al obtener informe semanal:', error);
     res.status(500).json({ error: 'Ocurrió un error al obtener el informe semanal' });
   }
 });

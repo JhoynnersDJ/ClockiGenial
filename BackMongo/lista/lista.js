@@ -205,6 +205,7 @@ router.get('/proyectos-por-usuario/:id_usuario', async (req, res) => {
         categoria,
         descripcion,
         cliente,
+        fecha_proyecto
       } = proyecto;
 
       let nombre_cliente = null;
@@ -222,6 +223,7 @@ router.get('/proyectos-por-usuario/:id_usuario', async (req, res) => {
         categoria,
         descripcion,
         nombre_cliente,
+        fecha_proyecto,
       });
     }
 
