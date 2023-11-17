@@ -68,5 +68,4 @@ router.get('/informe-semanal/:fecha_inicio', async (req, res) => {
 
 
 
-
 module.exports = router;
