@@ -1,8 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const Actividad = require('../Modelo/ActividadModel');
-const { startOfWeek, endOfWeek, format, parseISO } = require('date-fns');
-
 
 
 // Obtener actividades diarias
