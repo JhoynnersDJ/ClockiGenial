@@ -30,4 +30,29 @@ router.post('/registro-cliente', async (req, res) => {
   }
 });
 
+
+// Endpoint para borrar un cliente por su ID
+router.delete('/eliminar-cliente/:id_cliente', async (req, res) => {
+  try {
+    const { id_cliente } = req.params;
+
+    // Verificar si id_cliente es un ObjectId válido
+    if (!mongoose.isValidObjectId(id_cliente)) {
+      return res.status(400).json({ error: 'ID de cliente no válido' });
+    }
+
+    // Borrar el cliente por su ID
+    const resultado = await Cliente.findByIdAndDelete(id_cliente);
+
+    if (resultado) {
+      res.status(200).json({ message: 'Cliente borrado correctamente' });
+    } else {
+      res.status(404).json({ error: 'Cliente no encontrado' });
+    }
+  } catch (error) {
+    console.error('Error al borrar cliente:', error);
+    res.status(500).json({ error: 'Ocurrió un error al borrar el cliente' });
+  }
+});
+
 module.exports = router;
