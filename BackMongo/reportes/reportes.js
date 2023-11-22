@@ -49,11 +49,14 @@ router.post('/informe-semanal/', async (req, res) => {
     // Convertir la cadena de fecha de inicio a un objeto Date
     const fechaInicio = new Date(fecha_inicio);
 
-    // Calcula las fechas de inicio y fin de la semana que contiene la fecha de inicio
-    const primerDiaSemana = new Date(fechaInicio);
-    primerDiaSemana.setDate(fechaInicio.getDate() - fechaInicio.getDay() + (fechaInicio.getDay() === 0 ? -6 : 1));
-    const ultimoDiaSemana = new Date(fechaInicio);
-    ultimoDiaSemana.setDate(primerDiaSemana.getDate() + 6);
+// Calcula las fechas de inicio y fin de la semana que contiene la fecha de inicio
+const primerDiaSemana = new Date(fechaInicio);
+const diaSemana = fechaInicio.getDay();
+const diferenciaDias = diaSemana >= 1 ? diaSemana - 0 : 6; // Si es domingo, restamos 1 día; de lo contrario, restamos la cantidad de días transcurridos desde el lunes
+primerDiaSemana.setDate(fechaInicio.getDate() - diferenciaDias);
+
+const ultimoDiaSemana = new Date(primerDiaSemana);
+ultimoDiaSemana.setDate(primerDiaSemana.getDate() + 6);
 
     // Realiza una consulta para obtener las actividades en el rango de fechas y del usuario específico
     const actividadesSemana = await Actividad.find({
