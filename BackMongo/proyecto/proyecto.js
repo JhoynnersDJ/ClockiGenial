@@ -77,4 +77,29 @@ router.post('/registro-proyecto', async (req, res) => {
 });
 
 
+// Endpoint para borrar un proyecto por su ID
+router.delete('/eliminar-proyecto/:id_proyecto', async (req, res) => {
+  try {
+    const { id_proyecto } = req.params;
+
+    // Verificar si id_proyecto es un ObjectId válido
+    if (!mongoose.isValidObjectId(id_proyecto)) {
+      return res.status(400).json({ error: 'ID de proyecto no válido' });
+    }
+
+    // Borrar el proyecto por su ID
+    const resultado = await Proyecto.findByIdAndDelete(id_proyecto);
+
+    if (resultado) {
+      res.status(200).json({ message: 'Proyecto borrado correctamente' });
+    } else {
+      res.status(404).json({ error: 'Proyecto no encontrado' });
+    }
+  } catch (error) {
+    console.error('Error al borrar proyecto:', error);
+    res.status(500).json({ error: 'Ocurrió un error al borrar el proyecto' });
+  }
+});
+
+
 module.exports = router;

@@ -121,10 +121,10 @@ router.post('/actualizar-actividad', async (req, res) => {
       // Calcula la total_tarifa multiplicando la tarifa por la duración total en horas
       const totalHorasFloat = totalHoras + (totalMinutos / 60) + (totalSegundos / 3600);
       const total_tarifa = tarifa * totalHorasFloat;
-  
+      const tarifaTotalRedondeada = total_tarifa.toFixed(2);
       // Actualiza el campo 'total_tarifa' en la actividad
       await Actividad.findByIdAndUpdate(id_actividad, {
-        total_tarifa: total_tarifa,
+        total_tarifa: tarifaTotalRedondeada,
       });
   
       res.status(201).json({ message: 'Registro de tiempo y duración actualizados con éxito' });
@@ -161,7 +161,29 @@ router.post('/actividad-completada', async (req, res) => {
   }
 });
 
+// Endpoint para borrar un cliente por su ID
+router.delete('/eliminar-actividad/:id_actividad', async (req, res) => {
+  try {
+    const { id_actividad } = req.params;
 
+    // Verificar si id_actividad es un ObjectId válido
+    if (!mongoose.isValidObjectId(id_actividad)) {
+      return res.status(400).json({ error: 'ID de actividad no válido' });
+    }
+
+    // Borrar el cliente por su ID
+    const resultado = await Actividad.findByIdAndDelete(id_actividad);
+
+    if (resultado) {
+      res.status(200).json({ message: 'Actividad borrado correctamente' });
+    } else {
+      res.status(404).json({ error: 'Actividad no encontrado' });
+    }
+  } catch (error) {
+    console.error('Error al borrar actividad:', error);
+    res.status(500).json({ error: 'Ocurrió un error al borrar el actividad' });
+  }
+});
 
 module.exports = router;
 
