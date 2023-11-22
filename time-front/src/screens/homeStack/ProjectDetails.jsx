@@ -276,12 +276,13 @@ const ProjectDetails = ({ navigation }) => {
           <Text className="text-lg text-gray-700 font-bold">
             No hay Actividades en este Proyecto
           </Text>
+          {/* Crea una actividad */}
         </View>
       )}
       {/* Completar Proyecto y Eliminar Proyecto */}
-      <View className="flex justify-center gap-2 items-center bg-white rounded-lg p-10">
+      <View className="flex justify-center w-full gap-2 items-center bg-white rounded-lg p-10">
         <TouchableOpacity
-          className="flex flex-row justify-center items-center rounded-lg p-2 w-full" style={{ backgroundColor: colorCategoria().borderColor }}
+          className="flex flex-row justify-center items-center rounded-lg p-2 py-4 w-full" style={{ backgroundColor: colorCategoria().borderColor }}
           onPress={() => {
             Alert.alert(
               "Completar Proyecto",
@@ -312,11 +313,11 @@ const ProjectDetails = ({ navigation }) => {
           }
           }
         >
-          <Ionicons name="checkmark" size={24} color="white" />
-          <Text className="text-lg text-gray-100 font-bold">Completar</Text>
+          <Ionicons name="checkmark" size={30} color="white" />
+          <Text className="text-2xl text-gray-100 font-semibold">Completar</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          className="flex flex-row justify-center items-center bg-red-600 rounded-lg p-2"
+          className="flex w-full flex-row justify-center items-center bg-red-600 rounded-lg p-2"
           onPress={() => {
             Alert.alert(
               "Eliminar Proyecto",
