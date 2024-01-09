@@ -71,10 +71,9 @@ router.post('/informe-semanal/', async (req, res) => {
           model: 'Cliente',
           select: 'nombre_cliente',
         },
-        select: 'nombre_proyecto cliente tarifa_total',
+        select: 'nombre_proyecto cliente tarifa_total descripcion', // Agrega el campo descripcion
       })
       .exec();
-
 
     // Calcular la ganancia por proyecto y los ingresos totales
     const gananciaPorProyecto = actividadesSemana.reduce((result, actividad) => {
@@ -83,7 +82,9 @@ router.post('/informe-semanal/', async (req, res) => {
         if (!result[proyectoId]) {
           result[proyectoId] = {
             proyecto: actividad.proyecto.nombre_proyecto,
+            descripcion: actividad.proyecto.descripcion, // Agrega el campo descripcion
             gananciaTotal: 0,
+            tarifa: actividad.tarifa || 0, // Agrega el campo tarifa
           };
         }
         result[proyectoId].gananciaTotal += actividad.total_tarifa || 0;
@@ -121,6 +122,7 @@ router.post('/informe-semanal/', async (req, res) => {
           id_actividad: actividad._id,
           nombre_actividad: actividad.nombre_actividad,
           duracion_total: actividad.duracion_total,
+          tarifa: actividad.tarifa || 0, // Agrega el campo tarifa
           // Otros campos que desees incluir
         })),
         gananciaPorProyecto,
@@ -132,6 +134,10 @@ router.post('/informe-semanal/', async (req, res) => {
     res.status(500).json({ error: 'Ocurrió un error al obtener el informe semanal' });
   }
 });
+
+
+
+
 
 // Endpoint para obtener informe mensual
 router.post('/informe-mensual', async (req, res) => {
