@@ -13,6 +13,7 @@ import { useRoute } from "@react-navigation/native";
 import { useActuTime } from "../../controladores/ActuProviderTime";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { Alert } from "react-native";
+import PushNotification from "react-native-push-notification";
 
 const ActivityDetails = ({ navigation }) => {
   const [cronometro, setCronometro] = React.useState(null);
@@ -71,35 +72,106 @@ const ActivityDetails = ({ navigation }) => {
       ),
       });
   }, [navigation]);
+
+  // Asegúrate de que tienes los permisos necesarios para mostrar notificaciones.
+
+  // Configura el manejador de notificaciones
+  PushNotification.configure({
+    // (required) Called when a remote or local notification is opened or received
+    onNotification: function(notification) {
+      console.log('LOCAL NOTIFICATION ==>', notification);
+    },
+    popInitialNotification: true,
+    requestPermissions: true,
+  });
+
+  const showNotification = (title, message) => {
+    PushNotification.localNotification({
+      channelId: 'clockiGenial',
+      title: title,
+      message: message,
+      ongoing: true,
+      playSound: false,
+      vibrate: false,
+    });
+  };
   
-  //Crear Cronometro que solo aplique para la actividad seleccionada que al cambiar la actividad se detenga y se inicie el cronometro de la nueva actividad
+  React.useEffect(() => {
+    if (cronometro) {
+      const interval = setInterval(() => {
+        const tiempoActual = `${tiempo.horas.toString().padStart(2, "0")}:${tiempo.minutos.toString().padStart(2, "0")}:${tiempo.segundos.toString().padStart(2, "0")}`;
+        showNotification("Tiempo de Actividad", tiempoActual);
+      }, 1000);
+  
+      return () => {
+        clearInterval(interval);
+      };
+    }
+  }, [cronometro, tiempo]);
+  
+  // Muestra la notificación
+  PushNotification.localNotification({
+    title: 'Actividad en curso: ' + actividad.nombre_actividad,
+    message: `Tiempo: ${formatTiempo(tiempo)}`,
+    playSound: false,
+    ongoing: true, // hace que la notificación sea persistente
+  });
+  
+  // Actualiza la notificación
+  PushNotification.localNotification({
+    id: '1', // proporciona el mismo ID para actualizar la notificación existente
+    title: 'Actividad en curso: ' + actividad.nombre_actividad,
+    message: `Tiempo: ${formatTiempo(newTiempo)}`,
+    playSound: false,
+    ongoing: true,
+  });o
+
+
   const iniciarCronometro = () => {
     if (cronometro) {
+      // Detiene el cronómetro
       clearInterval(cronometro);
       setCronometro(null);
     } else {
-      const interval = setInterval(() => {
-        setTiempo((prevTiempo) => {
-          let segundos = prevTiempo.segundos;
-          let minutos = prevTiempo.minutos;
-          let horas = prevTiempo.horas;
+      // Muestra la notificación al iniciar el cronómetro
+      PushNotification.localNotification({
+        title: 'Actividad en curso: ' + actividad.nombre_actividad,
+        message: `Tiempo: ${formatTiempo(tiempo)}`,
+        playSound: false,
+        ongoing: true,
+      });
 
-          segundos++;
-          if (segundos === 60) {
-            segundos = 0;
-            minutos++;
-            if (minutos === 60) {
-              minutos = 0;
-              horas++;
-            }
-          }
+      
+// Inicia el cronómetro
+const interval = setInterval(() => {
+  setTiempo((prevTiempo) => {
+    let segundos = prevTiempo.segundos + 1;
+    let minutos = prevTiempo.minutos;
+    let horas = prevTiempo.horas;
 
-          return { segundos, minutos, horas };
-        });
-      }, 1000);
-      setCronometro(interval);
+    if (segundos === 60) {
+      segundos = 0;
+      minutos++;
+
+      if (minutos === 60) {
+        minutos = 0;
+        horas++;
+      }
+    }
+
+    return {
+      segundos,
+      minutos,
+      horas,
+    };
+
+  });
+}, 1000);
+setCronometro(interval);
     }
   };
+  
+  // Detiene el cronómetro cuando se desmonta el componente
 
   React.useEffect(() => {
     return () => {
@@ -167,6 +239,23 @@ const ActivityDetails = ({ navigation }) => {
     navigation.goBack();
     console.log(data);
   };
+
+  React.useEffect(() => {
+    const subscription = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
+        if (response.actionIdentifier === 'pausar') {
+          iniciarCronometro();
+          
+        } else if (response.actionIdentifier === 'reanudar') {
+          
+        }
+      }
+    );
+  
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   return (
     <SafeAreaView className="flex-1 bg-gray-100">
@@ -256,6 +345,12 @@ const ActivityDetails = ({ navigation }) => {
           >
             <Ionicons name="stop" size={42} color="#6d28d9" />
           </TouchableOpacity>
+          <TouchableOpacity
+          className="bg-gray-200 p-2 rounded-xl"
+          onPress={() => Alert.alert("En Desarrollo", "Editar el tiempo aun no está habilitado")}
+          >
+            <Ionicons name="pencil" size={42} color="#1f1f1f1f"></Ionicons>
+          </TouchableOpacity>
         </View>
       </View>
       {/* Lista de Intervalos */}
@@ -322,19 +417,47 @@ const ActivityDetails = ({ navigation }) => {
             onPress={() => completarActividad()}
           >
             <View className="bg-violet-700 rounded-lg w-full py-4 flex items-center justify-center flex-row">
+            <Ionicons name="checkmark-outline" size={30} color="#f1f1f1" />
               <Text className="text-2xl font-semibold text-gray-100">
                 Completar
               </Text>
-              <Ionicons name="checkmark-outline" size={24} color="#f1f1f1" />
             </View>
           </TouchableOpacity>
           <TouchableOpacity
-            className="flex-row justify-center mt-2 w-32 mx-auto bg-red-200 p-2 rounded-xl items-center"
-            onPress={() => navigation.goBack()}
-          >
-            <Text className="text-xl text-red-600 mx-1">Eiminar</Text>
-            <Ionicons name="trash-outline" size={24} color="#DC2626" />
-          </TouchableOpacity>
+          className="flex flex-row justify-center items-center bg-red-600 rounded-lg p-2"
+          onPress={() => {
+            Alert.alert(
+              "Eliminar Actividad",
+              "¿Estas seguro de eliminar la actividad?",
+              [
+                {
+                  text: "Cancelar",
+                  onPress: () => console.log("Cancel Pressed"),
+                  style: "cancel",
+                },
+                {
+                  text: "Eliminar",
+                  onPress: async () => {
+                    try {
+                      const { data } = await axios.delete(
+                        `http://192.168.1.50:7000/actividad/eliminar/${actividad.id_actividad}`
+                      );
+                      console.log(data);
+                      navigation.goBack();
+                    } catch (error) {
+                      console.log(error);
+                    }
+                  }
+                },
+              ],
+              { cancelable: false }
+            );
+          }
+          }
+        >
+          <Ionicons name="trash" size={24} color="white" />
+          <Text className="text-lg text-gray-100 font-bold">Eliminar</Text>
+        </TouchableOpacity>
         </View>
       </View>
     </SafeAreaView>

@@ -8,6 +8,7 @@ import Actividad from '../../components/actividades/Actividad'
 import BotonCrearActividad from '../../components/actividades/BotonCrearActividad'
 import BuscarActividad from '../../components/actividades/BuscarActividad'
 import { useActu } from '../../controladores/ActuProvider'
+import * as TaskManager from 'expo-task-manager';
 
 const Actividades = ({navigation}) => {
   const [actividadesObtenidas, setActividadesObtenidas] = React.useState([]);
@@ -37,6 +38,7 @@ const Actividades = ({navigation}) => {
   }
 
   console.log(actividadesObtenidas)
+    
 
   return (
     <SafeAreaView className="flex-1 bg-gray-100 mx-4">
