@@ -143,6 +143,9 @@ const actividadesConProyectoYCliente = actividadesSemana.map(actividad => ({
   nombre_cliente: actividad.proyecto && actividad.proyecto.cliente ? actividad.proyecto.cliente.nombre_cliente : '', // Incluir el nombre del cliente si existe
 }));
 
+// Formatear gananciaPorProyecto con corchetes
+const gananciaPorProyectoFormateada = Object.values(gananciaPorProyecto);
+
 res.status(200).json({
   informeSemanal: {
     rango_fechas: {
@@ -154,8 +157,8 @@ res.status(200).json({
       apellido: usuario.apellido,
       email: usuario.email,
     },
-    actividades: actividadesConProyectoYCliente, // Utilizar el nuevo arreglo mapeado
-    gananciaPorProyecto,
+    actividades: actividadesConProyectoYCliente,
+    gananciaPorProyecto: gananciaPorProyectoFormateada, // Utilizar la versión formateada
     ingresosTotales: ingresosTotalesDosDecimales,
     duracion_total_informe: duracionTotalFormato,
   },
