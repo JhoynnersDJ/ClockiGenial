@@ -3,6 +3,8 @@ const router = express.Router();
 const Actividad = require('../Modelo/ActividadModel');
 const Usuario = require('../Modelo/UsuarioModel');
 const {calcularInformacionReporte} = require('../funcionesReporte/funcionesReportes');
+const { obtenerPrecioBCV } = require('../bcv');
+
 
 
 // Obtener actividades diarias con nombre de proyecto y nombre de cliente
@@ -76,96 +78,100 @@ router.post('/informe-semanal/', async (req, res) => {
       .select('nombre_actividad duracion_total tarifa total_tarifa')
       .exec();
 
-// Calcular la ganancia por proyecto, los ingresos totales y la duración total del informe
-const { gananciaPorProyecto, ingresosTotales, duracionTotalInforme } = actividadesSemana.reduce(
-  (result, actividad) => {
-    const proyectoId = actividad.proyecto ? actividad.proyecto._id.toString() : null;
+    // Calcular la ganancia por proyecto, los ingresos totales y la duración total del informe
+    const { gananciaPorProyecto, ingresosTotales, duracionTotalInforme } = actividadesSemana.reduce(
+      (result, actividad) => {
+        const proyectoId = actividad.proyecto ? actividad.proyecto._id.toString() : null;
 
-    // Convertir la duración de cada actividad a segundos
-    const duracionActividadSegundos =
-      (actividad.duracion_total.horas || 0) * 3600 +
-      (actividad.duracion_total.minutos || 0) * 60 +
-      (actividad.duracion_total.segundos || 0);
+        // Convertir la duración de cada actividad a segundos
+        const duracionActividadSegundos =
+          (actividad.duracion_total.horas || 0) * 3600 +
+          (actividad.duracion_total.minutos || 0) * 60 +
+          (actividad.duracion_total.segundos || 0);
 
-    result.duracionTotalInforme += isNaN(duracionActividadSegundos) ? 0 : duracionActividadSegundos;
+        result.duracionTotalInforme += isNaN(duracionActividadSegundos) ? 0 : duracionActividadSegundos;
 
-    if (proyectoId) {
-      if (!result.gananciaPorProyecto[proyectoId]) {
-        result.gananciaPorProyecto[proyectoId] = {
-          proyecto: actividad.proyecto.nombre_proyecto,
-          descripcion: actividad.proyecto.descripcion,
-          gananciaTotal: 0,
-          tarifa: actividad.tarifa || 0,
-        };
-      }
-      result.gananciaPorProyecto[proyectoId].gananciaTotal += actividad.total_tarifa || 0;
-      result.gananciaPorProyecto[proyectoId].gananciaTotal = parseFloat(
-        result.gananciaPorProyecto[proyectoId].gananciaTotal.toFixed(2)
-      );
+        if (proyectoId) {
+          if (!result.gananciaPorProyecto[proyectoId]) {
+            result.gananciaPorProyecto[proyectoId] = {
+              proyecto: actividad.proyecto.nombre_proyecto,
+              descripcion: actividad.proyecto.descripcion,
+              gananciaTotal: 0,
+              tarifa: actividad.tarifa || 0,
+            };
+          }
+          result.gananciaPorProyecto[proyectoId].gananciaTotal += actividad.total_tarifa || 0;
+          result.gananciaPorProyecto[proyectoId].gananciaTotal = parseFloat(
+            result.gananciaPorProyecto[proyectoId].gananciaTotal.toFixed(2)
+          );
+        }
+
+        result.ingresosTotales += actividad.total_tarifa || 0;
+
+        return result;
+      },
+      { gananciaPorProyecto: {}, ingresosTotales: 0, duracionTotalInforme: 0 }
+    );
+
+    // Calcular el monto del BCV
+    const montoBCV = await obtenerPrecioBCV();
+
+    // Multiplicar el monto del BCV por ingresosTotales
+    const montoTotal = montoBCV * ingresosTotales;
+
+    // Redondear el resultado a dos decimales
+    const montoTotalRedondeado = parseFloat(montoTotal.toFixed(2));
+
+    // Obtener información del usuario
+    const usuario = await Usuario.findById(id_usuario).select('nombre apellido email').exec();
+
+    // Convertir la duración total del informe a formato horas, minutos, segundos
+    const duracionTotalFormato = convertirDuracionAFormato(duracionTotalInforme);
+
+    // Función para convertir la duración total a formato horas, minutos, segundos
+    function convertirDuracionAFormato(duracionTotal) {
+      const horas = Math.floor(duracionTotal / 3600);
+      const minutos = Math.floor((duracionTotal % 3600) / 60);
+      const segundos = Math.floor(duracionTotal % 60);
+      return {
+        horas,
+        minutos,
+        segundos,
+      };
     }
 
-    result.ingresosTotales += actividad.total_tarifa || 0;
+    // Mapear las actividades para incluir el nombre del proyecto y del cliente
+    const actividadesConProyectoYCliente = actividadesSemana.map(actividad => ({
+      id_actividad: actividad._id,
+      nombre_actividad: actividad.nombre_actividad,
+      duracion_total: actividad.duracion_total,
+      tarifa: actividad.tarifa || 0,
+      total_tarifa: actividad.total_tarifa || 0,
+      nombre_proyecto: actividad.proyecto ? actividad.proyecto.nombre_proyecto : '', // Incluir el nombre del proyecto si existe
+      nombre_cliente: actividad.proyecto && actividad.proyecto.cliente ? actividad.proyecto.cliente.nombre_cliente : '', // Incluir el nombre del cliente si existe
+    }));
 
-    return result;
-  },
-  { gananciaPorProyecto: {}, ingresosTotales: 0, duracionTotalInforme: 0 }
-);
+    // Formatear gananciaPorProyecto con corchetes
+    const gananciaPorProyectoFormateada = Object.values(gananciaPorProyecto);
 
-// Redondear los ingresos totales a dos decimales
-const ingresosTotalesDosDecimales = parseFloat(ingresosTotales.toFixed(2));
-
-// Obtener información del usuario
-const usuario = await Usuario.findById(id_usuario).select('nombre apellido email').exec();
-
-// Convertir la duración total del informe a formato horas, minutos, segundos
-const duracionTotalFormato = convertirDuracionAFormato(duracionTotalInforme);
-
-// Función para convertir la duración total a formato horas, minutos, segundos
-function convertirDuracionAFormato(duracionTotal) {
-  const horas = Math.floor(duracionTotal / 3600);
-  const minutos = Math.floor((duracionTotal % 3600) / 60);
-  const segundos = Math.floor(duracionTotal % 60);
-  return {
-    horas,
-    minutos,
-    segundos,
-  };
-}
-
-// Mapear las actividades para incluir el nombre del proyecto y del cliente
-const actividadesConProyectoYCliente = actividadesSemana.map(actividad => ({
-  id_actividad: actividad._id,
-  nombre_actividad: actividad.nombre_actividad,
-  duracion_total: actividad.duracion_total,
-  tarifa: actividad.tarifa || 0,
-  total_tarifa: actividad.total_tarifa || 0,
-  nombre_proyecto: actividad.proyecto ? actividad.proyecto.nombre_proyecto : '', // Incluir el nombre del proyecto si existe
-  nombre_cliente: actividad.proyecto && actividad.proyecto.cliente ? actividad.proyecto.cliente.nombre_cliente : '', // Incluir el nombre del cliente si existe
-}));
-
-// Formatear gananciaPorProyecto con corchetes
-const gananciaPorProyectoFormateada = Object.values(gananciaPorProyecto);
-
-res.status(200).json({
-  informeSemanal: {
-    rango_fechas: {
-      inicio: primerDiaSemana.toISOString().split('T')[0],
-      fin: ultimoDiaSemana.toISOString().split('T')[0],
-    },
-    usuario: {
-      nombre: usuario.nombre,
-      apellido: usuario.apellido,
-      email: usuario.email,
-    },
-    actividades: actividadesConProyectoYCliente,
-    gananciaPorProyecto: gananciaPorProyectoFormateada, // Utilizar la versión formateada
-    ingresosTotales: ingresosTotalesDosDecimales,
-    duracion_total_informe: duracionTotalFormato,
-  },
-});
-
-
-
+    res.status(200).json({
+      informeSemanal: {
+        rango_fechas: {
+          inicio: primerDiaSemana.toISOString().split('T')[0],
+          fin: ultimoDiaSemana.toISOString().split('T')[0],
+        },
+        usuario: {
+          nombre: usuario.nombre,
+          apellido: usuario.apellido,
+          email: usuario.email,
+        },
+        actividades: actividadesConProyectoYCliente,
+        gananciaPorProyecto: gananciaPorProyectoFormateada,
+        ingresosTotalesbcv: montoTotalRedondeado, // Utilizar la versión formateada
+        ingresosTotales: parseFloat(ingresosTotales.toFixed(2)), // Redondear ingresosTotales a dos decimales
+        duracion_total_informe: duracionTotalFormato,
+      },
+    });
 
   } catch (error) {
     console.error('Error al obtener informe semanal:', error);
