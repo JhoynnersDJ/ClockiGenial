@@ -127,6 +127,7 @@ router.post('/actualizar-actividad', async (req, res) => {
         total_tarifa: tarifaTotalRedondeada,
       });
   
+      
       res.status(201).json({ message: 'Registro de tiempo y duración actualizados con éxito' });
     } catch (error) {
       console.error('Error al actualizar actividad y tiempo:', error);

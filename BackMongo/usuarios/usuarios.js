@@ -47,10 +47,10 @@ router.post('/registro', async (req, res) => {
         "service": "gmail",
         "auth": {
           "type": "OAuth2",
-          "user": "omnitetgroup01@gmail.com",
-          "clientId": "575477209031-niavpn9mig2oejbnn3h451b2m1p117p5.apps.googleusercontent.com",
-          "clientSecret": "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",
-          "refreshToken": "1//04VsXQh_Zg21NCgYIARAAGAQSNwF-L9IrLdeQlToiBp4juzfc6hnUHFrC0vFAiRVtjepqCWWlZ4YFNJcPvb3KeOwUwfUHzlcAljg"
+          "user": "jhoynners.santaella15@gmail.com",
+          "clientId": "1010470278484-d3rhqg8ouapd4b4qfsdhmbqt23tcvvrs.apps.googleusercontent.com",
+          "clientSecret": "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",
+          "refreshToken": "1//04ljE4rJJxtarCgYIARAAGAQSNwF-L9Irh5LyQ0iZvAgp11OKn2KvfLDP62qJ6WL8e6LjOTBO3mX841U0hht4jn4l97SJh1qwIMA"
         }
     });
 
@@ -116,7 +116,7 @@ router.post('/registro', async (req, res) => {
 
     // Configura el correo electrónico de verificación
     const mailOptions = {
-        from: 'omnitetgroup01@gmail.com',
+        from: 'jhoynners.santaella15@gmail.com',
         to: email,
         subject: 'Verifica tu correo electrónico',
         html: htmlContent,

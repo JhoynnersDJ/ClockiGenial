@@ -17,7 +17,7 @@ const app = express();
 const port = 7000;
 
 // Conexión a la base de datos Omniservices
-const uri = "mongodb+srv://jhoysantaella15:Melon24@cluster0.zrpgq2r.mongodb.net/ClockyGenial?retryWrites=true&w=majority";
+const uri = "mongodb+srv://jhoysantaella15:Melon24@cluster0.zrpgq2r.mongodb.net/Omniservices?retryWrites=true&w=majority";
 mongoose.connect(uri) 
   .then(() => {
     console.log('Conexión exitosa a la base de datos');

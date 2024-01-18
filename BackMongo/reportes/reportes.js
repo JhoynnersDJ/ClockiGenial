@@ -169,7 +169,8 @@ router.post('/informe-semanal/', async (req, res) => {
         gananciaPorProyecto: gananciaPorProyectoFormateada,
         ingresosTotalesbcv: montoTotalRedondeado, // Utilizar la versión formateada
         ingresosTotales: parseFloat(ingresosTotales.toFixed(2)), // Redondear ingresosTotales a dos decimales
-        duracion_total_informe: duracionTotalFormato,
+        duracion_total_informe:
+         duracionTotalFormato,
       },
     });
 
