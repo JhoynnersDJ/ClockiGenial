@@ -5,7 +5,7 @@ const Usuario = require('../Modelo/UsuarioModel');
 
 router.post('/registro-cliente', async (req, res) => {
   try {
-    const { nombre_cliente, id_usuario, descripcion } = req.body;
+    const { nombre_cliente, id_usuario, descripcion_cliente, cargo_cliente } = req.body;
 
     // Verifica si el usuario existe antes de continuar
     const usuario = await Usuario.findById(id_usuario);
@@ -14,11 +14,14 @@ router.post('/registro-cliente', async (req, res) => {
     }
 
     // Crea un nuevo documento en la colección "clientes"
-    const nuevoCliente = new Cliente({
+    const nuevoClienteData = {
       nombre_cliente,
-      usuario: id_usuario, // Asumiendo que id_usuario es un ObjectId válido
-      descripcion,
-    });
+      usuario: id_usuario,
+      descripcion_cliente,
+      cargo_cliente: cargo_cliente !== undefined ? cargo_cliente : null,
+    };
+
+    const nuevoCliente = new Cliente(nuevoClienteData);
 
     // Guarda el cliente en MongoDB
     await nuevoCliente.save();
@@ -54,5 +57,27 @@ router.delete('/eliminar-cliente/:id_cliente', async (req, res) => {
     res.status(500).json({ error: 'Ocurrió un error al borrar el cliente' });
   }
 });
+
+// Endpoint para obtener todos los clientes de un usuario
+router.post('/lista-cliente', async (req, res) => {
+  try {
+    const { id_usuario } = req.body;
+
+    // Verifica si el usuario existe antes de continuar
+    const usuario = await Usuario.findById(id_usuario);
+    if (!usuario) {
+      return res.status(404).json({ error: 'El usuario no existe' });
+    }
+
+    // Busca todos los clientes asociados al usuario
+    const clientes = await Cliente.find({ usuario: id_usuario });
+
+    res.status(200).json({ clientes });
+  } catch (error) {
+    console.error('Error al obtener clientes:', error);
+    res.status(500).json({ error: 'Ocurrió un error al obtener clientes' });
+  }
+});
+
 
 module.exports = router;

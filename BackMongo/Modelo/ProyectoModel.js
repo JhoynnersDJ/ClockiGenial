@@ -9,6 +9,7 @@ const ProyectoSchema = new mongoose.Schema({
   fecha_proyecto: String,
   hora_proyecto: String,
   completado: { type: Boolean, default: false },
+  contador: { type: Number, default: 0 }, // Campo contador inicializado en 0
 });
 
 const Proyecto = mongoose.model('Proyecto', ProyectoSchema);

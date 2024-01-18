@@ -4,6 +4,7 @@ const Actividad = require('../Modelo/ActividadModel');
 const RegistroTiempo = require('../Modelo/RegistroTiempoModel');
 const mongoose = require('mongoose');
 const { obtenerPrecioBCV } = require('../bcv');
+const Proyecto = require('../Modelo/ProyectoModel');
 
 router.post('/registro-actividad', async (req, res) => {
   try {
@@ -54,6 +55,15 @@ router.post('/registro-actividad', async (req, res) => {
 
     // Guarda el registro de tiempo en MongoDB
     await nuevoRegistroTiempo.save();
+
+    // 3. Actualiza el contador del proyecto
+    if (id_proyecto) {
+      await Proyecto.findOneAndUpdate(
+        { _id: id_proyecto },
+        { $inc: { contador: 1 } },
+        { new: true } // Devuelve el documento actualizado
+      );
+    }
 
     res.status(201).json({ actividadData: actividadGuardada });
   } catch (error) {
