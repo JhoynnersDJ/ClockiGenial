@@ -258,7 +258,31 @@ router.get('/clientes-por-usuario/:id_usuario', async (req, res) => {
   }
 });
 
+//Endpoint que lista los clientes de dicho usuario
+router.get('/lista-clientes/:id_usuario', async (req, res) => {
+  try {
+    const { id_usuario } = req.params;
 
+    // Busca los clientes relacionados con el usuario por su ID
+    const clientesUsuario = await Cliente.find({ usuario: id_usuario });
+
+    const clientesResponse = clientesUsuario.map((cliente) => ({
+      id_cliente: cliente._id,
+      nombre_cliente: cliente.nombre_cliente,
+      descripcion_cliente:cliente.descripcion_cliente,
+      cargo_cliente:cliente.cargo_cliente,
+      email_cliente:cliente.email_cliente,
+      tel_cliente:cliente.tel_cliente,
+    }));
+
+    res.status(200).json({
+      clientesUsuario: clientesResponse,
+    });
+  } catch (error) {
+    console.error('Error al obtener clientes:', error);
+    res.status(500).json({ error: 'Ocurrió un error al obtener clientes' });
+  }
+});
 
 
 // Endpoint para obtener actividades por proyecto

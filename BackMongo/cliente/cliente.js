@@ -5,7 +5,7 @@ const Usuario = require('../Modelo/UsuarioModel');
 
 router.post('/registro-cliente', async (req, res) => {
   try {
-    const { nombre_cliente, id_usuario, descripcion_cliente, cargo_cliente } = req.body;
+    const { nombre_cliente, id_usuario, descripcion_cliente, cargo_cliente, email_cliente, tel_cliente } = req.body;
 
     // Verifica si el usuario existe antes de continuar
     const usuario = await Usuario.findById(id_usuario);
@@ -19,6 +19,8 @@ router.post('/registro-cliente', async (req, res) => {
       usuario: id_usuario,
       descripcion_cliente,
       cargo_cliente: cargo_cliente !== undefined ? cargo_cliente : null,
+      email_cliente: email_cliente || null, // Asegura que sea nulo si no se proporciona
+      tel_cliente: tel_cliente || null, // Asegura que sea nulo si no se proporciona
     };
 
     const nuevoCliente = new Cliente(nuevoClienteData);
@@ -32,6 +34,7 @@ router.post('/registro-cliente', async (req, res) => {
     res.status(500).json({ error: 'Ocurrió un error al registrar cliente' });
   }
 });
+
 
 
 // Endpoint para borrar un cliente por su ID
