@@ -123,7 +123,7 @@ router.post('/informe-semanal/', async (req, res) => {
     const montoTotalRedondeado = parseFloat(montoTotal.toFixed(2));
 
     // Obtener información del usuario
-    const usuario = await Usuario.findById(id_usuario).select('nombre apellido email').exec();
+    const usuario = await Usuario.findById(id_usuario).select('nombre apellido email departamento cargo empresa num_tel').exec();
 
     // Convertir la duración total del informe a formato horas, minutos, segundos
     const duracionTotalFormato = convertirDuracionAFormato(duracionTotalInforme);
@@ -164,6 +164,10 @@ router.post('/informe-semanal/', async (req, res) => {
           nombre: usuario.nombre,
           apellido: usuario.apellido,
           email: usuario.email,
+          departamento: usuario.departamento,
+          cargo:usuario.cargo,
+          empresa:usuario.empresa,
+          num_tel:usuario.num_tel,
         },
         actividades: actividadesConProyectoYCliente,
         gananciaPorProyecto: gananciaPorProyectoFormateada,
@@ -249,7 +253,7 @@ router.post('/informe-mensual', async (req, res) => {
     const ingresosTotalesDosDecimales = parseFloat(ingresosTotales.toFixed(2));
 
     // Obtener información del usuario
-    const usuario = await Usuario.findById(id_usuario).select('nombre apellido email').exec();
+    const usuario = await Usuario.findById(id_usuario).select('nombre apellido email cargo empresa num_tel').exec();
 
     // Resto del código para procesar y enviar la respuesta
 
@@ -263,6 +267,9 @@ router.post('/informe-mensual', async (req, res) => {
           nombre: usuario.nombre,
           apellido: usuario.apellido,
           email: usuario.email,
+          empresa:usuario.empresa,
+          cargo:usuario.cargo,
+          num_tel:usuario.num_tel,
         },
         actividades: actividadesMes.map(actividad => ({
           id_actividad: actividad._id,

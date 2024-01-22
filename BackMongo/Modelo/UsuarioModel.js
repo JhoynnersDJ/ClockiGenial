@@ -18,6 +18,18 @@ const usuarioSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  cargo: {
+    type: String,
+    default: null
+  },
+  num_tel: {
+    type: String,
+    default: null
+  },
+  empresa: {
+    type: String,
+    default: null
+  },
   verificado: {
     type: Boolean,
     default: false
