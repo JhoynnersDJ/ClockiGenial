@@ -10,35 +10,43 @@ const { obtenerPrecioBCV } = require('../bcv');
 // Obtener actividades diarias con nombre de proyecto y nombre de cliente
 router.post('/informe-diario', async (req, res) => {
   try {
-    const { fecha, id_usuario } = req.body;
+      const { fecha, id_usuario } = req.body;
 
-    // Obtener actividades para la fecha específica y cargar los datos del proyecto y cliente asociados
-    const InformeDiario = await Actividad.find({ fecha_registro: fecha, usuario: id_usuario })
-      .populate({
-        path: 'proyecto',
-        model: 'Proyecto',
-        populate: {
-          path: 'cliente',
-          model: 'Cliente',
-          select: 'nombre_cliente', // Puedes seleccionar los campos que desees del cliente
-        },
-        select: 'nombre_proyecto cliente tarifa_total', // Incluimos el campo cliente y tarifa_total
-      })
-      .exec();
+      // Obtener actividades para la fecha específica y cargar los datos del proyecto y cliente asociados
+      const informeDiario = await Actividad.find({ fecha_registro: fecha, usuario: id_usuario })
+          .populate({
+              path: 'proyecto',
+              model: 'Proyecto',
+              populate: {
+                  path: 'cliente',
+                  model: 'Cliente',
+                  select: 'nombre_cliente', // Puedes seleccionar los campos que desees del cliente
+              },
+              select: 'nombre_proyecto cliente tarifa_total', // Incluimos el campo cliente y tarifa_total
+          })
+          .exec();
 
-    // Obtener información del usuario
-    const usuario = await Usuario.findById(id_usuario).select('nombre apellido email cargo departamento num_tel empresa').exec();
+      // Obtener información del usuario
+      const usuario = await Usuario.findById(id_usuario).select('nombre apellido email cargo departamento num_tel empresa').exec();
 
-    // Calcular la información del reporte utilizando la función modular
-    const { gananciaPorProyecto, ingresosTotales } = await calcularInformacionReporte(InformeDiario);
+      // Calcular la información del reporte utilizando la función modular
+      const { gananciaPorProyecto, ingresosTotales } = await calcularInformacionReporte(informeDiario);
 
-    res.status(200).json({ InformeDiario, usuario, gananciaPorProyecto, ingresosTotales });
+      // Sustituir corchetes por llaves en cada objeto dentro de InformeDiario
+      const informeDiarioConLlaves = informeDiario.reduce((result, obj) => {
+          result[obj._id] = obj;
+          return result;
+      }, {});
+
+      // Construir el objeto de respuesta
+      const respuestaInformeDiario = { InformeDiario: informeDiarioConLlaves, usuario, gananciaPorProyecto, ingresosTotales };
+
+      res.status(200).json(respuestaInformeDiario);
   } catch (error) {
-    console.error('Error al obtener informe diario:', error);
-    res.status(500).json({ error: 'Ocurrió un error al obtener el informe diario' });
+      console.error('Error al obtener informe diario:', error);
+      res.status(500).json({ error: 'Ocurrió un error al obtener el informe diario' });
   }
 });
-
 
 // Endpoint para obtener informe semanal
 router.post('/informe-semanal/', async (req, res) => {
