@@ -27,12 +27,12 @@ router.post('/informe-diario', async (req, res) => {
       .exec();
 
     // Obtener información del usuario
-    const usuario = await Usuario.findById(id_usuario).select('nombre apellido email').exec();
+    const usuario = await Usuario.findById(id_usuario).select('nombre apellido email cargo departamento num_tel empresa').exec();
 
     // Calcular la información del reporte utilizando la función modular
-    const { gananciaPorProyecto, ingresosTotales } = await calcularInformacionReporte(actividadesDiarias);
+    const { gananciaPorProyecto, ingresosTotales } = await calcularInformacionReporte(InformeDiario);
 
-    res.status(200).json({ actividadesDiarias, usuario, gananciaPorProyecto, ingresosTotales });
+    res.status(200).json({ InformeDiario, usuario, gananciaPorProyecto, ingresosTotales });
   } catch (error) {
     console.error('Error al obtener informe diario:', error);
     res.status(500).json({ error: 'Ocurrió un error al obtener el informe diario' });
