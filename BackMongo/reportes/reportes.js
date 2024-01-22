@@ -13,7 +13,7 @@ router.post('/informe-diario', async (req, res) => {
     const { fecha, id_usuario } = req.body;
 
     // Obtener actividades para la fecha específica y cargar los datos del proyecto y cliente asociados
-    const actividadesDiarias = await Actividad.find({ fecha_registro: fecha, usuario: id_usuario })
+    const InformeDiario = await Actividad.find({ fecha_registro: fecha, usuario: id_usuario })
       .populate({
         path: 'proyecto',
         model: 'Proyecto',
