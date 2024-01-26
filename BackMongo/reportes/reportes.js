@@ -11,36 +11,120 @@ router.post('/informe-diario', async (req, res) => {
   try {
     const { fecha, id_usuario } = req.body;
 
+    const actividadDiaria = fecha;
     // Obtener actividades para la fecha específica y cargar los datos del proyecto y cliente asociados
     const informeDiario = await Actividad.find({ fecha_registro: fecha, usuario: id_usuario })
-      .populate({
-        path: 'proyecto',
-        model: 'Proyecto',
-        populate: {
-          path: 'cliente',
-          model: 'Cliente',
-          select: 'nombre_cliente', // Puedes seleccionar los campos que desees del cliente
-        },
-        select: 'nombre_proyecto cliente tarifa_total', // Incluimos el campo cliente y tarifa_total
-      })
-      .exec();
+    .populate({
+      path: 'proyecto',
+      model: 'Proyecto',
+      populate: {
+        path: 'cliente',
+        model: 'Cliente',
+        select: 'nombre_cliente',
+      },
+      select: 'nombre_proyecto cliente total_tarifa descripcion',
+    })
+    .select('nombre_actividad duracion_total tarifa total_tarifa')
+    .exec();
 
-    // Obtener información del usuario
-    const usuario = await Usuario.findById(id_usuario).select('nombre apellido email cargo departamento num_tel empresa').exec();
+  // Calcular la ganancia por proyecto, los ingresos totales y la duración total del informe
+  const { gananciaPorProyecto, ingresosTotales, duracionTotalInforme } = actividadDiaria.reduce(
+    (result, actividad) => {
+      const proyectoId = actividad.proyecto ? actividad.proyecto._id.toString() : null;
 
-    // Calcular la información del reporte utilizando la función modular
-    const { gananciaPorProyecto, ingresosTotales } = await calcularInformacionReporte(informeDiario);
+      // Convertir la duración de cada actividad a segundos
+      const duracionActividadSegundos =
+        (actividad.duracion_total.horas || 0) * 3600 +
+        (actividad.duracion_total.minutos || 0) * 60 +
+        (actividad.duracion_total.segundos || 0);
 
-    // Sustituir corchetes por llaves en cada objeto dentro de InformeDiario
-    const informeDiarioConLlaves = informeDiario.reduce((result, obj) => {
-      result[obj._id] = obj;
+      result.duracionTotalInforme += isNaN(duracionActividadSegundos) ? 0 : duracionActividadSegundos;
+
+      if (proyectoId) {
+        if (!result.gananciaPorProyecto[proyectoId]) {
+          result.gananciaPorProyecto[proyectoId] = {
+            proyecto: actividad.proyecto.nombre_proyecto,
+            descripcion: actividad.proyecto.descripcion,
+            gananciaTotal: 0,
+            tarifa: actividad.tarifa || 0,
+          };
+        }
+        result.gananciaPorProyecto[proyectoId].gananciaTotal += actividad.total_tarifa || 0;
+        result.gananciaPorProyecto[proyectoId].gananciaTotal = parseFloat(
+          result.gananciaPorProyecto[proyectoId].gananciaTotal.toFixed(2)
+        );
+      }
+
+      result.ingresosTotales += actividad.total_tarifa || 0;
+
       return result;
-    }, {});
+    },
+    { gananciaPorProyecto: {}, ingresosTotales: 0, duracionTotalInforme: 0 }
+  );
 
-    // Construir el objeto de respuesta con la fecha proporcionada por el cliente
-    const respuestaInformeDiario = { fecha: fecha, InformeDiario: informeDiarioConLlaves, usuario, gananciaPorProyecto, ingresosTotales };
+  // Calcular el monto del BCV
+  const montoBCV = await obtenerPrecioBCV();
 
-    res.status(200).json(respuestaInformeDiario);
+  // Multiplicar el monto del BCV por ingresosTotales
+  const montoTotal = montoBCV * ingresosTotales;
+
+  // Redondear el resultado a dos decimales
+  const montoTotalRedondeado = parseFloat(montoTotal.toFixed(2));
+
+  // Obtener información del usuario
+  const usuario = await Usuario.findById(id_usuario).select('nombre apellido email departamento cargo empresa num_tel').exec();
+
+  // Convertir la duración total del informe a formato horas, minutos, segundos
+  const duracionTotalFormato = convertirDuracionAFormato(duracionTotalInforme);
+
+  // Función para convertir la duración total a formato horas, minutos, segundos
+  function convertirDuracionAFormato(duracionTotal) {
+    const horas = Math.floor(duracionTotal / 3600);
+    const minutos = Math.floor((duracionTotal % 3600) / 60);
+    const segundos = Math.floor(duracionTotal % 60);
+    return {
+      horas,
+      minutos,
+      segundos,
+    };
+  }
+
+  // Mapear las actividades para incluir el nombre del proyecto y del cliente
+  const actividadesConProyectoYCliente = actividadDiaria.map(actividad => ({
+    id_actividad: actividad._id,
+    nombre_actividad: actividad.nombre_actividad,
+    duracion_total: actividad.duracion_total,
+    tarifa: actividad.tarifa || 0,
+    total_tarifa: actividad.total_tarifa || 0,
+    nombre_proyecto: actividad.proyecto ? actividad.proyecto.nombre_proyecto : '', // Incluir el nombre del proyecto si existe
+    nombre_cliente: actividad.proyecto && actividad.proyecto.cliente ? actividad.proyecto.cliente.nombre_cliente : '', // Incluir el nombre del cliente si existe
+  }));
+
+  // Formatear gananciaPorProyecto con corchetes
+  const gananciaPorProyectoFormateada = Object.values(gananciaPorProyecto);
+
+  res.status(200).json({
+    informeDiaria: {
+      fechas: {
+        fecha:fecha
+      },
+      usuario: {
+        nombre: usuario.nombre,
+        apellido: usuario.apellido,
+        email: usuario.email,
+        departamento: usuario.departamento,
+        cargo:usuario.cargo,
+        empresa:usuario.empresa,
+        num_tel:usuario.num_tel,
+      },
+      actividades: actividadesConProyectoYCliente,
+      gananciaPorProyecto: gananciaPorProyectoFormateada,
+      ingresosTotalesbcv: montoTotalRedondeado, // Utilizar la versión formateada
+      ingresosTotales: parseFloat(ingresosTotales.toFixed(2)), // Redondear ingresosTotales a dos decimales
+      duracion_total_informe:
+       duracionTotalFormato,
+    },
+  });
   } catch (error) {
     console.error('Error al obtener informe diario:', error);
     res.status(500).json({ error: 'Ocurrió un error al obtener el informe diario' });
@@ -223,47 +307,94 @@ router.post('/informe-mensual', async (req, res) => {
       },
       usuario: id_usuario, // Agregar esta condición para filtrar por usuario
     })
-      .populate({
-        path: 'proyecto',
-        model: 'Proyecto',
-        populate: {
-          path: 'cliente',
-          model: 'Cliente',
-          select: 'nombre_cliente',
-        },
-        select: 'nombre_proyecto cliente tarifa_total',
-      })
-      .exec();
+    .populate({
+      path: 'proyecto',
+      model: 'Proyecto',
+      populate: {
+        path: 'cliente',
+        model: 'Cliente',
+        select: 'nombre_cliente',
+      },
+      select: 'nombre_proyecto cliente total_tarifa descripcion',
+    })
+    .select('nombre_actividad duracion_total tarifa total_tarifa')
+    .exec();
 
-    // Calcular la ganancia por proyecto y los ingresos totales
-    const gananciaPorProyecto = actividadesMes.reduce((result, actividad) => {
-      const proyectoId = actividad.proyecto ? actividad.proyecto._id.toString() : null; // Convertir a cadena para comparar
-      if (proyectoId) {
-        if (!result[proyectoId]) {
-          result[proyectoId] = {
-            proyecto: actividad.proyecto.nombre_proyecto,
-            gananciaTotal: 0,
-          };
+// Calcular la ganancia por proyecto, los ingresos totales y la duración total del informe
+    const { gananciaPorProyecto, ingresosTotales, duracionTotalInforme } = actividadesMes.reduce(
+      (result, actividad) => {
+        const proyectoId = actividad.proyecto ? actividad.proyecto._id.toString() : null;
+
+        // Convertir la duración de cada actividad a segundos
+        const duracionActividadSegundos =
+          (actividad.duracion_total.horas || 0) * 3600 +
+          (actividad.duracion_total.minutos || 0) * 60 +
+          (actividad.duracion_total.segundos || 0);
+
+        result.duracionTotalInforme += isNaN(duracionActividadSegundos) ? 0 : duracionActividadSegundos;
+
+        if (proyectoId) {
+          if (!result.gananciaPorProyecto[proyectoId]) {
+            result.gananciaPorProyecto[proyectoId] = {
+              proyecto: actividad.proyecto.nombre_proyecto,
+              descripcion: actividad.proyecto.descripcion,
+              gananciaTotal: 0,
+              tarifa: actividad.tarifa || 0,
+            };
+          }
+          result.gananciaPorProyecto[proyectoId].gananciaTotal += actividad.total_tarifa || 0;
+          result.gananciaPorProyecto[proyectoId].gananciaTotal = parseFloat(
+            result.gananciaPorProyecto[proyectoId].gananciaTotal.toFixed(2)
+          );
         }
-        result[proyectoId].gananciaTotal += actividad.total_tarifa || 0;
-        result[proyectoId].gananciaTotal = parseFloat(result[proyectoId].gananciaTotal.toFixed(2)); // Redondear a dos decimales
-      }
-      return result;
-    }, {});
 
-    // Calcular los ingresos totales del usuario
-    const ingresosTotales = actividadesMes.reduce((total, actividad) => {
-      total += actividad.total_tarifa || 0;
-      return total;
-    }, 0);
+        result.ingresosTotales += actividad.total_tarifa || 0;
 
-    // Redondear los ingresos totales a dos decimales
-    const ingresosTotalesDosDecimales = parseFloat(ingresosTotales.toFixed(2));
+        return result;
+      },
+      { gananciaPorProyecto: {}, ingresosTotales: 0, duracionTotalInforme: 0 }
+    );
+
+    // Calcular el monto del BCV
+    const montoBCV = await obtenerPrecioBCV();
+
+    // Multiplicar el monto del BCV por ingresosTotales
+    const montoTotal = montoBCV * ingresosTotales;
+
+    // Redondear el resultado a dos decimales
+    const montoTotalRedondeado = parseFloat(montoTotal.toFixed(2));
 
     // Obtener información del usuario
-    const usuario = await Usuario.findById(id_usuario).select('nombre apellido email cargo empresa num_tel').exec();
+    const usuario = await Usuario.findById(id_usuario).select('nombre apellido email departamento cargo empresa num_tel').exec();
 
-    // Resto del código para procesar y enviar la respuesta
+    // Convertir la duración total del informe a formato horas, minutos, segundos
+    const duracionTotalFormato = convertirDuracionAFormato(duracionTotalInforme);
+
+    // Función para convertir la duración total a formato horas, minutos, segundos
+    function convertirDuracionAFormato(duracionTotal) {
+      const horas = Math.floor(duracionTotal / 3600);
+      const minutos = Math.floor((duracionTotal % 3600) / 60);
+      const segundos = Math.floor(duracionTotal % 60);
+      return {
+        horas,
+        minutos,
+        segundos,
+      };
+    }
+
+    // Mapear las actividades para incluir el nombre del proyecto y del cliente
+    const actividadesConProyectoYCliente = actividadesMes.map(actividad => ({
+      id_actividad: actividad._id,
+      nombre_actividad: actividad.nombre_actividad,
+      duracion_total: actividad.duracion_total,
+      tarifa: actividad.tarifa || 0,
+      total_tarifa: actividad.total_tarifa || 0,
+      nombre_proyecto: actividad.proyecto ? actividad.proyecto.nombre_proyecto : '', // Incluir el nombre del proyecto si existe
+      nombre_cliente: actividad.proyecto && actividad.proyecto.cliente ? actividad.proyecto.cliente.nombre_cliente : '', // Incluir el nombre del cliente si existe
+    }));
+
+    // Formatear gananciaPorProyecto con corchetes
+    const gananciaPorProyectoFormateada = Object.values(gananciaPorProyecto);
 
     res.status(200).json({
       informeMensual: {
@@ -275,18 +406,17 @@ router.post('/informe-mensual', async (req, res) => {
           nombre: usuario.nombre,
           apellido: usuario.apellido,
           email: usuario.email,
-          empresa:usuario.empresa,
+          departamento: usuario.departamento,
           cargo:usuario.cargo,
+          empresa:usuario.empresa,
           num_tel:usuario.num_tel,
         },
-        actividades: actividadesMes.map(actividad => ({
-          id_actividad: actividad._id,
-          nombre_actividad: actividad.nombre_actividad,
-          duracion_total: actividad.duracion_total,
-          // Otros campos que desees incluir
-        })),
-        gananciaPorProyecto,
-        ingresosTotales: ingresosTotalesDosDecimales,
+        actividades: actividadesConProyectoYCliente,
+        gananciaPorProyecto: gananciaPorProyectoFormateada,
+        ingresosTotalesbcv: montoTotalRedondeado, // Utilizar la versión formateada
+        ingresosTotales: parseFloat(ingresosTotales.toFixed(2)), // Redondear ingresosTotales a dos decimales
+        duracion_total_informe:
+         duracionTotalFormato,
       },
     });
   } catch (error) {

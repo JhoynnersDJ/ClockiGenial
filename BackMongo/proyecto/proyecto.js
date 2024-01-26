@@ -101,5 +101,29 @@ router.delete('/eliminar-proyecto/:id_proyecto', async (req, res) => {
   }
 });
 
+router.put('/editar-proyecto/:id', async (req, res) => {
+  try {
+    const { id } = req.params; // Obtén el ID del proyecto a editar
+    const { nombre_proyecto, descripcion, categoria } = req.body;
+
+    // Verifica si el proyecto existe antes de intentar editarlo
+    const proyecto = await Proyecto.findById(id);
+    if (!proyecto) {
+      return res.status(404).json({ error: 'El proyecto no existe' });
+    }
+
+    // Actualiza los campos permitidos del proyecto
+    await Proyecto.findByIdAndUpdate(id, {
+      nombre_proyecto,
+      descripcion,
+      categoria,
+    }, { new: true }); // El parámetro { new: true } devuelve el documento actualizado
+
+    res.status(200).json({ message: 'Proyecto actualizado con éxito' });
+  } catch (error) {
+    console.error('Error al editar proyecto:', error);
+    res.status(500).json({ error: 'Ocurrió un error al editar proyecto' });
+  }
+});
 
 module.exports = router;

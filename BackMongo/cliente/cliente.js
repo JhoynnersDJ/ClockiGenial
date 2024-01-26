@@ -82,5 +82,34 @@ router.post('/lista-cliente', async (req, res) => {
   }
 });
 
+// Endpoint para actualizar clientes
+router.put('/editar-cliente/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nombre_cliente, descripcion_cliente, cargo_cliente, email_cliente, tel_cliente } = req.body;
+
+    // Verifica si el cliente existe antes de continuar
+    const cliente = await Cliente.findById(id);
+    if (!cliente) {
+      return res.status(404).json({ error: 'El cliente no existe' });
+    }
+
+    // Actualiza los campos del cliente, excluyendo id_usuario
+    cliente.nombre_cliente = nombre_cliente || cliente.nombre_cliente;
+    cliente.descripcion_cliente = descripcion_cliente || cliente.descripcion_cliente;
+    cliente.cargo_cliente = cargo_cliente !== undefined ? cargo_cliente : cliente.cargo_cliente;
+    cliente.email_cliente = email_cliente || null; // Asegura que sea nulo si no se proporciona
+    cliente.tel_cliente = tel_cliente || null; // Asegura que sea nulo si no se proporciona
+
+    // Guarda los cambios en MongoDB
+    await cliente.save();
+
+    res.status(200).json({ message: 'Cliente actualizado con éxito' });
+  } catch (error) {
+    console.error('Error al actualizar cliente:', error);
+    res.status(500).json({ error: 'Ocurrió un error al actualizar cliente' });
+  }
+});
+
 
 module.exports = router;
