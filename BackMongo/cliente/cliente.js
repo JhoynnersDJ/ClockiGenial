@@ -42,11 +42,6 @@ router.delete('/eliminar-cliente/:id_cliente', async (req, res) => {
   try {
     const { id_cliente } = req.params;
 
-    // Verificar si id_cliente es un ObjectId válido
-    if (!mongoose.isValidObjectId(id_cliente)) {
-      return res.status(400).json({ error: 'ID de cliente no válido' });
-    }
-
     // Borrar el cliente por su ID
     const resultado = await Cliente.findByIdAndDelete(id_cliente);
 
