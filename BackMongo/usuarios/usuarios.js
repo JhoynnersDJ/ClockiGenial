@@ -263,30 +263,30 @@ router.put('/editar-usuario/:id_usuario', async (req, res) => {
   }
 });
 
-// Ruta para obtener todos los datos de un usuario por ID
-router.get('/datos-usuario/:id_usuario', async (req, res) => {
-  try {
-    const { id_usuario } = req.params;
+  // Ruta para obtener todos los datos de un usuario por ID
+  router.get('/datos-usuario/:id_usuario', async (req, res) => {
+    try {
+      const { id_usuario } = req.params;
 
-    // Verifica si el ID de usuario es válido
-    if (!mongoose.isValidObjectId(id_usuario)) {
-      return res.status(400).json({ error: 'ID de usuario no válido' });
+      // Verifica si el ID de usuario es válido
+      if (!mongoose.isValidObjectId(id_usuario)) {
+        return res.status(400).json({ error: 'ID de usuario no válido' });
+      }
+
+      // Busca el usuario por ID en la base de datos
+      const usuario = await UsuariosModel.findById(id_usuario);
+
+      if (!usuario) {
+        return res.status(404).json({ error: 'Usuario no encontrado' });
+      }
+
+      // Devuelve todos los datos del usuario
+      res.status(200).json({ usuario });
+    } catch (error) {
+      console.error('Error al obtener datos de usuario:', error);
+      res.status(500).json({ error: 'Ocurrió un error al obtener datos de usuario' });
     }
-
-    // Busca el usuario por ID en la base de datos
-    const usuario = await UsuariosModel.findById(id_usuario);
-
-    if (!usuario) {
-      return res.status(404).json({ error: 'Usuario no encontrado' });
-    }
-
-    // Devuelve todos los datos del usuario
-    res.status(200).json({ usuario });
-  } catch (error) {
-    console.error('Error al obtener datos de usuario:', error);
-    res.status(500).json({ error: 'Ocurrió un error al obtener datos de usuario' });
-  }
-});
+  });
 
 
 

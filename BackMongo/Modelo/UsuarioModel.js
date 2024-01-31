@@ -26,6 +26,10 @@ const usuarioSchema = new mongoose.Schema({
     type: String,
     default: null
   },
+  departamento: {
+    type: String,
+    default: null
+  },
   empresa: {
     type: String,
     default: null
