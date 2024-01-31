@@ -71,6 +71,56 @@ router.post('/registro-actividad', async (req, res) => {
     res.status(500).json({ error: 'Ocurrió un error al registrar actividad y tiempo' });
   }
 });
+// Ruta para actualizar una actividad
+router.put('/editar-actividad/:id_actividad', async (req, res) => {
+  try {
+    const { id_actividad } = req.params;
+    const { nombre_actividad, id_proyecto, tarifa } = req.body;
+
+    // Verifica si id_actividad es un ObjectId válido
+    if (!mongoose.isValidObjectId(id_actividad)) {
+      return res.status(400).json({ error: 'ID de actividad no válido' });
+    }
+
+    // Verifica si id_proyecto es un ObjectId válido (si se proporciona)
+    if (id_proyecto && !mongoose.isValidObjectId(id_proyecto)) {
+      return res.status(400).json({ error: 'ID de proyecto no válido' });
+    }
+
+    // Obtiene la actividad existente
+    const actividadExistente = await Actividad.findById(id_actividad);
+
+    if (!actividadExistente) {
+      return res.status(404).json({ error: 'La actividad no existe' });
+    }
+
+    // Actualiza los campos de la actividad
+    actividadExistente.nombre_actividad = nombre_actividad || actividadExistente.nombre_actividad;
+    actividadExistente.tarifa = tarifa !== undefined ? tarifa : actividadExistente.tarifa;
+
+    // Actualiza la referencia al proyecto (si se proporciona)
+    if (id_proyecto) {
+      actividadExistente.proyecto = id_proyecto;
+    }
+
+    // Guarda la actividad actualizada en MongoDB
+    const actividadActualizada = await actividadExistente.save();
+
+    // Si se proporciona un proyecto, actualiza el contador del proyecto
+    if (id_proyecto) {
+      await Proyecto.findOneAndUpdate(
+        { _id: id_proyecto },
+        { $inc: { contador: 1 } },
+        { new: true } // Devuelve el documento actualizado
+      );
+    }
+
+    res.status(200).json({ actividadData: actividadActualizada });
+  } catch (error) {
+    console.error('Error al actualizar actividad:', error);
+    res.status(500).json({ error: 'Ocurrió un error al actualizar actividad' });
+  }
+});
 
 //Endpoint para actualizar actividades
 router.post('/actualizar-actividad', async (req, res) => {
@@ -195,6 +245,8 @@ router.delete('/eliminar-actividad/:id_actividad', async (req, res) => {
     res.status(500).json({ error: 'Ocurrió un error al borrar el actividad' });
   }
 });
+
+
 
 module.exports = router;
 
